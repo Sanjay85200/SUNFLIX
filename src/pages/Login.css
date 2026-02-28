@@ -1,5 +1,5 @@
 .login-page {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f63669fb-230c-4093-8508-d6e0ad269199/US-en-20220502-popsignuptwilight-perspective_alpha_website_medium.jpg');
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), #000 url('https://images.unsplash.com/photo-1574267431629-2e457b99203c?auto=format&fit=crop&w=1920&q=80');
     background-size: cover;
     height: 100vh;
 }

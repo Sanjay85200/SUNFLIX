@@ -1,0 +1,51 @@
+.sunflix-drop-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.sunflix-drop-container.fade-out {
+    opacity: 0;
+}
+
+.sunflix-logo-animation {
+    color: var(--netflix-red);
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 1.8s cubic-bezier(0.21, 0.6, 0.35, 1), opacity 0.5s ease-out;
+    text-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
+}
+
+.sunflix-logo-animation.zoom-in {
+    opacity: 1;
+    transform: scale(1.5);
+}
+
+@keyframes dropShadowEffect {
+    0% {
+        filter: drop-shadow(0 0 0 rgba(229, 9, 20, 0));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 30px rgba(229, 9, 20, 0.8));
+    }
+
+    100% {
+        filter: drop-shadow(0 0 10px rgba(229, 9, 20, 0.4));
+    }
+}
+
+.zoom-in {
+    animation: dropShadowEffect 2s infinite alternate;
+}
