@@ -16,6 +16,11 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Health check route
+app.get('/', (req, res) => {
+    res.json({ message: "SUNFLIX Backend is running!" });
+});
+
 // Signup Route - Handling userId as requested
 app.post('/api/signup', async (req, res) => {
     const { name, mobile, email, password } = req.body;
