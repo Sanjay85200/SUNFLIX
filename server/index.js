@@ -6,7 +6,11 @@ const db = require('./db');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: '*', // For production, you might want to restrict this to your Vercel URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
