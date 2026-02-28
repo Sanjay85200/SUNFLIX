@@ -1,0 +1,150 @@
+.banner {
+    color: white;
+    object-fit: contain;
+    height: 90vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.banner__contents {
+    margin-left: 60px;
+    width: 50%;
+    z-index: 10;
+    padding-top: 10vh;
+}
+
+.banner__type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.banner__n {
+    color: var(--netflix-red);
+    font-weight: 900;
+    font-size: 2.2rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.banner__series {
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+    font-weight: 800;
+    color: #e5e5e5;
+}
+
+.banner__title {
+    font-size: 5rem;
+    font-weight: 800;
+    padding-bottom: 0.5rem;
+    margin-bottom: 10px;
+    line-height: 1.1;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.banner__metadata {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.banner__year {
+    color: #fff;
+}
+
+
+.banner__top10 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.top10__box {
+    background-color: var(--netflix-red);
+    padding: 2px 6px;
+    line-height: 1;
+    font-size: 0.6rem;
+    text-align: center;
+}
+
+.banner__description {
+    line-height: 1.4;
+    padding-top: 1rem;
+    font-size: 1.2rem;
+    max-width: 600px;
+    height: 85px;
+    font-weight: 500;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+}
+
+.banner__buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.banner__button {
+    cursor: pointer;
+    color: #fff;
+    outline: none;
+    border: none;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 0.7rem 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.banner__button--play {
+    background-color: white;
+    color: black;
+}
+
+.banner__button--play:hover {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.banner__button--list {
+    background-color: rgba(109, 109, 110, 0.7);
+}
+
+.banner__button--list:hover {
+    background-color: rgba(109, 109, 110, 0.4);
+}
+
+.banner--fadeBottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 20rem;
+    background-image: linear-gradient(180deg,
+            transparent,
+            rgba(17, 17, 17, 0.7),
+            #111);
+}
+
+@media (max-width: 768px) {
+    .banner__contents {
+        width: 90%;
+        margin-left: 20px;
+    }
+
+    .banner__title {
+        font-size: 2.8rem;
+    }
+
+    .banner__description {
+        font-size: 1rem;
+    }
+}

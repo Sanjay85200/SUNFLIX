@@ -1,0 +1,218 @@
+.row {
+    margin-left: 15px;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.row__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-left: 45px;
+    margin-bottom: 5px;
+    color: #e5e5e5;
+    transition: color 0.3s;
+}
+
+.row:hover .row__title {
+    color: white;
+}
+
+.row__container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.row__posters {
+    display: flex;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    padding: 20px 0 20px 45px;
+    scroll-behavior: smooth;
+}
+
+.row__posters::-webkit-scrollbar {
+    display: none;
+}
+
+.row__posterWrapper {
+    position: relative;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+    background: #181818;
+    border-radius: 4px;
+}
+
+.row__posterWrapper:hover {
+    transform: scale(1.4) translateY(-25%);
+    z-index: 100;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+}
+
+.row__poster {
+    object-fit: cover;
+    width: 240px;
+    height: 135px;
+    border-radius: 4px;
+    transition: border-bottom-left-radius 0.2s, border-bottom-right-radius 0.2s;
+}
+
+.row__posterLarge {
+    height: 350px;
+    width: 233px;
+    /* 2:3 aspect ratio */
+}
+
+.row__posterWrapper:hover .row__poster {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Item Info (Rich Hover state) */
+.row__itemInfo {
+    opacity: 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #181818;
+    padding: 15px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.row__posterWrapper:hover .row__itemInfo {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.itemInfo__icons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.icons__left {
+    display: flex;
+    gap: 8px;
+}
+
+.icon__circle {
+    border: 2px solid #555;
+    border-radius: 50%;
+    padding: 8px;
+    font-size: 2.2rem;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.2s;
+}
+
+.icon__circle:hover {
+    border-color: white;
+}
+
+.play {
+    background-color: white;
+    color: black;
+    border: none;
+}
+
+.play:hover {
+    background-color: #e6e6e6;
+}
+
+.itemInfo__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.match {
+    color: #46d369;
+}
+
+.rating {
+    border: 1px solid #808080;
+    padding: 0 5px;
+    font-size: 0.7rem;
+}
+
+.hd {
+    border: 1px solid #808080;
+    border-radius: 3px;
+    padding: 0 4px;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+}
+
+.row__movieName {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.genres {
+    display: flex;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: #d2d2d2;
+    font-weight: 600;
+}
+
+.dot {
+    color: #6d6d6e;
+    margin: 0 2px;
+}
+
+/* Arrows */
+.row__arrow {
+    position: absolute;
+    z-index: 50;
+    font-size: 2.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    height: 100%;
+    width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 8px;
+    opacity: 0;
+}
+
+.row:hover .row__arrow {
+    opacity: 1;
+}
+
+.row__arrow:hover {
+    background: rgba(0, 0, 0, 0.8);
+    font-size: 3rem;
+}
+
+.left {
+    left: 0;
+    border-radius: 0 4px 4px 0;
+}
+
+.right {
+    right: 0;
+    border-radius: 4px 0 0 4px;
+}
+
+@media (max-width: 768px) {
+    .row__posterWrapper:hover {
+        transform: none;
+    }
+}
