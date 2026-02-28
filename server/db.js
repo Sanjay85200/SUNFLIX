@@ -3,15 +3,17 @@ const mysql = require('mysql2');
 
 if (!process.env.DB_HOST) {
     console.error("❌ DATABASE CONFIG ERROR: DB_HOST is missing.");
-    console.error("Ensure environment variables are set in the Render dashboard.");
+    console.error("Please add DB_HOST to your Render Environment variables.");
+} else {
+    console.log(`📡 Attempting connection to: ${process.env.DB_HOST.substring(0, 5)}...`);
 }
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
+    port: process.env.DB_PORT,
     ssl: {
         rejectUnauthorized: false
     },
