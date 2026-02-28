@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import authApi from '../services/authApi';
 import './Signup.css';
 
 const Signup = () => {
@@ -20,7 +20,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/signup', formData);
+            await authApi.signup(formData);
             navigate('/login');
         } catch (err) {
             setError(err.response?.data?.message || 'Signup failed');

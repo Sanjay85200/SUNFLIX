@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import './Login.css';
-import { useAuth } from '../context/AuthContext';
+import authApi from '../services/authApi';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -14,7 +12,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/login', { email, password });
+            const response = await authApi.login({ email, password });
             login(response.data.user, response.data.token);
             navigate('/');
         } catch (err) {
