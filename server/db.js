@@ -1,13 +1,17 @@
+require('dotenv').config();
 const mysql = require('mysql2');
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+if (!process.env.DB_HOST) {
+    console.error("❌ DATABASE CONFIG ERROR: DB_HOST is missing.");
+    console.error("Ensure environment variables are set in the Render dashboard.");
+}
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    port: process.env.DB_PORT || 3306,
     ssl: {
         rejectUnauthorized: false
     },
