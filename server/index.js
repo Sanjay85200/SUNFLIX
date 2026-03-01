@@ -93,20 +93,14 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Movies Route
-app.get('/api/movies', (req, res) => {
-    const movies = [
-        {
-            id: "1",
-            title: "Guardians of the Galaxy Vol. 2",
-            poster_path: "https://m.media-amazon.com/images/M/MV5BNjM0NTc0NzItM2FlYS00YzEwLWE0YmUtNTA2ZWIzODc2OTgxXkEyXkFqcGdeQXVyNTgwNzIyNTE@._V1_SX300.jpg"
-        },
-        {
-            id: "2",
-            title: "Interstellar",
-            poster_path: "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"
-        }
-    ];
-    res.json(movies);
+app.get('/api/movies', async (req, res) => {
+    try {
+        const [movies] = await db.query('SELECT * FROM movies');
+        res.json(movies);
+    } catch (error) {
+        console.error("❌ Error fetching movies:", error);
+        res.status(500).json({ message: "Server error fetching movies" });
+    }
 });
 
 // Handle client-side routing: for any GET request that doesn't 
