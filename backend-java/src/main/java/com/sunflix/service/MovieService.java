@@ -18,6 +18,9 @@ public class MovieService {
     }
 
     public Movie saveMovie(Movie movie) {
+        if (movie == null) {
+            throw new IllegalArgumentException("Movie cannot be null");
+        }
         return movieRepository.save(movie);
     }
 }
