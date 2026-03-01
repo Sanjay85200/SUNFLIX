@@ -24,14 +24,14 @@ app.get('/', (req, res) => {
 // Signup Route - Handling userId as requested
 app.post('/api/signup', async (req, res) => {
     const { name, mobile, email, password } = req.body;
-    // We'll use email as the 'userId' to satisfy the schema requirement while keeping email functionality
     const userId = email;
 
-    console.log("Signup attempt for userId:", userId);
+    console.log("📝 Signup attempt for:", userId);
 
     try {
         const [existing] = await db.query('SELECT * FROM users WHERE userId = ?', [userId]);
         if (existing.length > 0) {
+            console.log("⚠️ Signup failed: User already exists:", userId);
             return res.status(400).json({ message: "User already exists" });
         }
 
@@ -42,9 +42,10 @@ app.post('/api/signup', async (req, res) => {
             [userId, name, mobile, hashedPassword]
         );
 
+        console.log("✅ Signup successful for:", userId);
         res.status(201).json({ message: "User created successfully" });
     } catch (error) {
-        console.error("Signup Error:", error);
+        console.error("❌ Signup Error:", error);
         res.status(500).json({ message: "Server error", details: error.message });
     }
 });
@@ -54,20 +55,25 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     const userId = email;
 
+    console.log("🔑 Login attempt for:", userId);
+
     try {
         const [users] = await db.query('SELECT * FROM users WHERE userId = ?', [userId]);
         if (users.length === 0) {
+            console.log("⚠️ Login failed: User not found:", userId);
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const user = users[0];
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log("⚠️ Login failed: Incorrect password for:", userId);
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const token = jwt.sign({ id: user.id, userId: user.userId }, JWT_SECRET, { expiresIn: '1h' });
 
+        console.log("✅ Login successful for:", userId);
         res.json({
             token,
             user: {
@@ -77,7 +83,7 @@ app.post('/api/login', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Login Error:", error);
+        console.error("❌ Login Error:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
