@@ -15,7 +15,8 @@ export const requests = {
     fetchDocumentaries: `${OMDB_BASE_URL}?s=Documentary&type=movie&apikey=${OMDB_API_KEY}`,
 
     // OMDB Specific Movie Endpoint
-    fetchFeaturedMovie: `${OMDB_BASE_URL}?i=tt3896198&apikey=${OMDB_API_KEY}`
+    fetchFeaturedMovie: `${OMDB_BASE_URL}?i=tt3896198&apikey=${OMDB_API_KEY}`,
+    fetchSunflixMovies: `/api/movies`
 };
 
 // Placeholder as imageBaseUrl is no longer needed for OMDB (OMDB provides full URLs)
