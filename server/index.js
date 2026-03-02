@@ -52,7 +52,9 @@ app.post('/api/signup', async (req, res) => {
         console.error("❌ Signup Error:", error);
         res.status(500).json({
             message: "Server error",
-            details: error.message || error.toString()
+            details: error.message || error.toString(),
+            code: error.code,
+            error: error
         });
     }
 });
@@ -93,7 +95,9 @@ app.post('/api/login', async (req, res) => {
         console.error("❌ Login Error:", error);
         res.status(500).json({
             message: "Server error",
-            details: error.message || error.toString()
+            details: error.message || error.toString(),
+            code: error.code,
+            error: error
         });
     }
 });
@@ -107,7 +111,9 @@ app.get('/api/movies', async (req, res) => {
         console.error("❌ Error fetching movies:", error);
         res.status(500).json({
             message: "Server error fetching movies",
-            details: error.message || error.toString()
+            details: error.message || error.toString(),
+            code: error.code,
+            error: error
         });
     }
 });
