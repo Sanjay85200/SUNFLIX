@@ -50,7 +50,10 @@ app.post('/api/signup', async (req, res) => {
         res.status(201).json({ message: "User created successfully" });
     } catch (error) {
         console.error("❌ Signup Error:", error);
-        res.status(500).json({ message: "Server error", details: error.message });
+        res.status(500).json({
+            message: "Server error",
+            details: error.message || error.toString()
+        });
     }
 });
 
@@ -88,7 +91,10 @@ app.post('/api/login', async (req, res) => {
         });
     } catch (error) {
         console.error("❌ Login Error:", error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({
+            message: "Server error",
+            details: error.message || error.toString()
+        });
     }
 });
 
@@ -99,7 +105,10 @@ app.get('/api/movies', async (req, res) => {
         res.json(movies);
     } catch (error) {
         console.error("❌ Error fetching movies:", error);
-        res.status(500).json({ message: "Server error fetching movies" });
+        res.status(500).json({
+            message: "Server error fetching movies",
+            details: error.message || error.toString()
+        });
     }
 });
 
