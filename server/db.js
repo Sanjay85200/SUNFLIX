@@ -108,7 +108,9 @@ const syncDB = async () => {
         console.log("Database schema synchronized for SUNFLIX.");
         connection.release();
     } catch (err) {
-        console.error("Database sync error:", err);
+        console.error("❌ Database sync/connection error:", err.message);
+        console.error("Error Code:", err.code);
+        console.error("Full Error:", err);
     }
 };
 
