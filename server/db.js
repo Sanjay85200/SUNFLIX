@@ -26,8 +26,6 @@ const pool = mysql.createPool({
 const syncDB = async () => {
     try {
         const connection = await pool.promise().getConnection();
-
-        const connection = await pool.promise().getConnection();
         console.log("✅ Database connection verified.");
 
         // Ensure base table
