@@ -1,25 +1,32 @@
 import axios from 'axios';
 
-const OMDB_API_KEY = "99fa872f";
-const OMDB_BASE_URL = "https://www.omdbapi.com/";
+const YOUTUBE_API_KEY = "AIzaSyBWhXJ9G-gz_8sIjnpsOXDLA1j5K4nAlEU";
+const YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/search";
+
+// Base parameters to find full movies
+const baseParams = `&part=snippet&type=video&videoDuration=long&maxResults=15&key=${YOUTUBE_API_KEY}`;
 
 export const requests = {
-    // OMDB Search Endpoints (Simulating Netflix categories)
-    fetchTrending: `${OMDB_BASE_URL}?s=Popular&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchNetflixOriginals: `${OMDB_BASE_URL}?s=Netflix&apikey=${OMDB_API_KEY}`,
-    fetchTopRated: `${OMDB_BASE_URL}?s=Best&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchActionMovies: `${OMDB_BASE_URL}?s=Action&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchComedyMovies: `${OMDB_BASE_URL}?s=Comedy&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchHorrorMovies: `${OMDB_BASE_URL}?s=Horror&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchRomanceMovies: `${OMDB_BASE_URL}?s=Romance&type=movie&apikey=${OMDB_API_KEY}`,
-    fetchDocumentaries: `${OMDB_BASE_URL}?s=Documentary&type=movie&apikey=${OMDB_API_KEY}`,
+    // English Genres
+    fetchEnglishAction: `${YOUTUBE_BASE_URL}?q=free+full+movie+english+action${baseParams}`,
+    fetchEnglishComedy: `${YOUTUBE_BASE_URL}?q=free+full+movie+english+comedy${baseParams}`,
+    fetchEnglishRomance: `${YOUTUBE_BASE_URL}?q=free+full+movie+english+romance${baseParams}`,
+    
+    // Hindi Genres
+    fetchHindiAction: `${YOUTUBE_BASE_URL}?q=hindi+action+full+movie${baseParams}`,
+    fetchHindiComedy: `${YOUTUBE_BASE_URL}?q=hindi+comedy+full+movie${baseParams}`,
+    fetchHindiRomance: `${YOUTUBE_BASE_URL}?q=hindi+romance+full+movie${baseParams}`,
+    
+    // Telugu
+    fetchTeluguMovies: `${YOUTUBE_BASE_URL}?q=telugu+full+movie${baseParams}`,
+    fetchTeluguAction: `${YOUTUBE_BASE_URL}?q=telugu+action+full+movie${baseParams}`,
+    
+    // Documentaries
+    fetchDocumentaries: `${YOUTUBE_BASE_URL}?q=free+full+documentary+movie${baseParams}`,
 
-    // OMDB Specific Movie Endpoint
-    fetchFeaturedMovie: `${OMDB_BASE_URL}?i=tt3896198&apikey=${OMDB_API_KEY}`,
-    fetchSunflixMovies: `/api/movies`
+    // Banner featured (Trending / Netflix-like)
+    fetchFeaturedMovie: `${YOUTUBE_BASE_URL}?q=netflix+official+free+full+movie${baseParams}`,
 };
 
-// Placeholder as imageBaseUrl is no longer needed for OMDB (OMDB provides full URLs)
-export const imageBaseUrl = "";
-
+export const imageBaseUrl = ""; // No longer needed
 export default requests;

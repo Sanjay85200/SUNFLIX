@@ -48,13 +48,15 @@ function AppContent() {
                             <div className="app">
                                 <Navbar />
                                 <Banner />
-                                <Row title="SUNFLIX ORIGINALS" fetchUrl={requests.fetchNetflixOriginals} isLargeRow />
-                                <Row title="Trending Now" fetchUrl={requests.fetchTrending} />
-                                <Row title="Top Rated" fetchUrl={requests.fetchTopRated} />
-                                <Row title="Action Movies" fetchUrl={requests.fetchActionMovies} />
-                                <Row title="Comedy Movies" fetchUrl={requests.fetchComedyMovies} />
-                                <Row title="Horror Movies" fetchUrl={requests.fetchHorrorMovies} />
-                                <Row title="Romance Movies" fetchUrl={requests.fetchRomanceMovies} />
+                                <Row title="SUNFLIX ORIGINALS" fetchUrl={requests.fetchFeaturedMovie} isLargeRow />
+                                <Row title="English Action Movies" fetchUrl={requests.fetchEnglishAction} />
+                                <Row title="English Comedy Movies" fetchUrl={requests.fetchEnglishComedy} />
+                                <Row title="English Romance Movies" fetchUrl={requests.fetchEnglishRomance} />
+                                <Row title="Hindi Action Movies" fetchUrl={requests.fetchHindiAction} />
+                                <Row title="Hindi Comedy Movies" fetchUrl={requests.fetchHindiComedy} />
+                                <Row title="Hindi Romance Movies" fetchUrl={requests.fetchHindiRomance} />
+                                <Row title="Telugu Hits" fetchUrl={requests.fetchTeluguMovies} />
+                                <Row title="Telugu Action" fetchUrl={requests.fetchTeluguAction} />
                                 <Row title="Documentaries" fetchUrl={requests.fetchDocumentaries} />
 
                                 <footer className="footer">
