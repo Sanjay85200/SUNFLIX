@@ -4,7 +4,7 @@ import './Banner.css';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { requests } from '../services/api';
 
-const Banner = () => {
+const Banner = ({ onPlayMovie }) => {
     const [movie, setMovie] = useState(null);
 
     useEffect(() => {
@@ -77,8 +77,11 @@ const Banner = () => {
                 <div className="banner__buttons">
                     {/* Optionally, one could trigger YouTube player here as well */}
                     <button className="banner__button banner__button--play" onClick={() => {
-                        if (movie?.id?.videoId) {
-                            window.open(`https://www.youtube.com/watch?v=${movie.id.videoId}`, '_blank');
+                        if (movie?.id?.videoId && onPlayMovie) {
+                            onPlayMovie({
+                                videoId: movie.id.videoId,
+                                title: movie.snippet.title
+                            });
                         }
                     }}>
                         <FaPlay /> Play

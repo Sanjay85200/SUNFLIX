@@ -3,12 +3,16 @@ import axios from 'axios';
 import './Row.css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-const Row = ({ title, fetchUrl, isLargeRow = false }) => {
+const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false }) => {
     const [movies, setMovies] = useState([]);
-    const [trailerUrl, setTrailerUrl] = useState("");
     const rowRef = useRef(null);
 
     useEffect(() => {
+        if (moviesData) {
+            setMovies(moviesData);
+            return;
+        }
+
         async function fetchData() {
             try {
                 const request = await axios.get(fetchUrl);
@@ -73,16 +77,20 @@ const Row = ({ title, fetchUrl, isLargeRow = false }) => {
     };
 
     const handleClick = (movie) => {
-        if (trailerUrl === movie.id.videoId) {
-            setTrailerUrl(""); // Toggle off
-        } else {
-            setTrailerUrl(movie.id.videoId);
+        if (onMovieSelect) {
+            onMovieSelect({
+                videoId: movie.id.videoId,
+                title: movie.snippet.title
+            });
         }
     };
 
     return (
         <div className="row">
-            <h2 className="row__title">{title}</h2>
+            <h2 className="row__title">
+                {title}
+                <span className="row__arrowIndicator">&nbsp;&gt;</span>
+            </h2>
 
             <div className="row__container">
                 <div className="row__arrow left" onClick={() => scroll('left')}>
@@ -97,12 +105,35 @@ const Row = ({ title, fetchUrl, isLargeRow = false }) => {
 
                         return (
                             <div key={videoId} className={`row__posterWrapper ${isLargeRow && 'row__posterLargeWrapper'}`} onClick={() => handleClick(movie)}>
-                                <img
-                                    className={`row__poster ${isLargeRow && 'row__posterLarge'}`}
-                                    src={thumbnailUrl}
-                                    alt={title}
-                                />
-                                <p className="row__posterTitle">{title}</p>
+                                <div className="row__posterContent">
+                                    <div className="row__posterMain">
+                                        <img
+                                            className={`row__poster ${isLargeRow && 'row__posterLarge'}`}
+                                            src={thumbnailUrl}
+                                            alt={title}
+                                        />
+                                        <div className="row__branding">
+                                            <span className="row__netflixLogo">N</span>
+                                        </div>
+                                        {Math.random() > 0.7 && (
+                                            <div className="row__badge">
+                                                <span>NEW EPISODE</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="row__posterMetadata">
+                                        <div className="row__metadataIcons">
+                                            <span className="match">98% Match</span>
+                                            <span className="rating">U/A 16+</span>
+                                        </div>
+                                        <p className="row__metadataTitle">{title}</p>
+                                        <div className="row__metadataTags">
+                                            <span>Action</span>
+                                            <span className="dot">•</span>
+                                            <span>Exciting</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         );
                     })}
@@ -112,20 +143,6 @@ const Row = ({ title, fetchUrl, isLargeRow = false }) => {
                     <FaChevronRight className="arrow__icon" />
                 </div>
             </div>
-            
-            {trailerUrl && (
-                <div className="row__player">
-                    <iframe 
-                        width="100%" 
-                        height="450" 
-                        src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
-                        title="YouTube video player" 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen>
-                    </iframe>
-                </div>
-            )}
         </div>
     );
 };

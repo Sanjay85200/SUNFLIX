@@ -7,10 +7,30 @@
     --transition: all 0.3s ease;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+.search-results {
+    padding: 80px 0 20px 0;
+    min-height: 100vh;
+}
+
+.search-results__header {
+    padding: 10px 4%;
+    font-size: 1rem;
+    color: var(--grey);
+}
+
+.search-results__header span {
+    color: var(--white);
+    font-weight: 700;
 }
 
 body {
@@ -18,8 +38,7 @@ body {
     background-color: var(--dark-bg);
     color: var(--white);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    letter-spacing: 0.2px;
 }
 
 /* Custom Scrollbar */
@@ -42,6 +61,11 @@ body {
 
 .app {
     background-color: var(--dark-bg);
+}
+
+.nav__link--active {
+    font-weight: 700 !important;
+    color: var(--white) !important;
 }
 
 /* Glassmorphism utility */

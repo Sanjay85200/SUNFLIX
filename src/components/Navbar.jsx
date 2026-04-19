@@ -3,8 +3,10 @@ import './Navbar.css';
 import { FaSearch, FaGift, FaBell } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = () => {
+const Navbar = ({ onSearch, onClearSearch }) => {
     const [show, handleShow] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const { logout } = useAuth();
 
     useEffect(() => {
@@ -18,22 +20,49 @@ const Navbar = () => {
         };
     }, []);
 
+    const handleHomeClick = () => {
+        setSearchQuery("");
+        setIsSearchOpen(false);
+        if (onClearSearch) onClearSearch();
+    };
+
     return (
         <div className={`nav ${show && 'nav__black'}`}>
-            <h1 className="nav__logo">SUNFLIX</h1>
+            <h1 className="nav__logo" onClick={handleHomeClick}>SUNFLIX</h1>
 
             <div className="nav__links">
-                <span>Home</span>
+                <span onClick={handleHomeClick} className="nav__link--active">Home</span>
                 <span>TV Shows</span>
                 <span>Movies</span>
-                <span>New & Popular</span>
+                <span>Latest</span>
                 <span>My List</span>
             </div>
 
             <div className="nav__right">
-                <FaSearch className="nav__icon" />
-                <span className="nav__kids">Children</span>
-                <FaGift className="nav__icon" />
+                <div className={`nav__search ${isSearchOpen && 'nav__search--open'}`}>
+                    <FaSearch className="nav__icon" onClick={() => {
+                        if (isSearchOpen && searchQuery) {
+                            onSearch(searchQuery);
+                        } else {
+                            setIsSearchOpen(!isSearchOpen);
+                        }
+                    }} />
+                    <input
+                        className="nav__searchInput"
+                        type="text"
+                        placeholder="Search Movies..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                onSearch(searchQuery);
+                            }
+                        }}
+                        onBlur={() => !searchQuery && setIsSearchOpen(false)}
+                    />
+                </div>
+                <span className="nav__kids">CHILDREN</span>
+                <FaGift className="nav__icon nav__icon--hide" />
                 <FaBell className="nav__icon" />
                 <div className="nav__avatar__container">
                     <img
