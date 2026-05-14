@@ -1,31 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './SunflixDrop.css';
 
+/**
+ * Boot splash — CSS + timers only (no GSAP) for maximum compatibility.
+ */
 const SunflixDrop = ({ onComplete }) => {
-    const [animationStep, setAnimationStep] = useState(0);
+    const [logoActive, setLogoActive] = useState(false);
+    const [fadeOut, setFadeOut] = useState(false);
+    const finishedRef = useRef(false);
 
     useEffect(() => {
-        // Play notification sound
         const audio = new Audio('/netflix_notifications.mp3');
-        audio.play().catch(e => console.log("Audio play failed:", e));
+        audio.volume = 0.22;
+        audio.play().catch(() => {});
 
-        // Animation sequence
-        const timer1 = setTimeout(() => setAnimationStep(1), 100); // Start zoom
-        const timer2 = setTimeout(() => setAnimationStep(2), 2000); // Start fade out
-        const timer3 = setTimeout(() => onComplete(), 2800); // Remove component
+        const tLogo = window.setTimeout(() => setLogoActive(true), 80);
+        const tFade = window.setTimeout(() => setFadeOut(true), 2200);
+        const tDone = window.setTimeout(() => {
+            if (finishedRef.current) return;
+            finishedRef.current = true;
+            onComplete?.();
+        }, 3000);
 
         return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-            clearTimeout(timer3);
+            window.clearTimeout(tLogo);
+            window.clearTimeout(tFade);
+            window.clearTimeout(tDone);
         };
     }, [onComplete]);
 
     return (
-        <div className={`sunflix-drop-container ${animationStep === 2 ? 'fade-out' : ''}`}>
-            <div className={`sunflix-logo-animation ${animationStep >= 1 ? 'zoom-in' : ''}`}>
-                SUNFLIX
+        <div
+            className={`sunflix-drop-container ${fadeOut ? 'sunflix-drop-container--out' : ''}`}
+            role="presentation"
+        >
+            <div className="sunflix-drop__grid" aria-hidden />
+            <div className="sunflix-drop__scanlines" aria-hidden />
+            <div className="sunflix-drop__particles" aria-hidden />
+            <div className={`sunflix-logo-animation ${logoActive ? 'sunflix-logo-animation--in' : ''}`}>
+                <span className="sunflix-logo-animation__core">SUNFLIX</span>
+                <span className="sunflix-logo-animation__ghost" aria-hidden>
+                    SUNFLIX
+                </span>
             </div>
+            <p className="sunflix-drop__tagline">Neural cinema · AI universe</p>
         </div>
     );
 };

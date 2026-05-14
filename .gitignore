@@ -5,9 +5,8 @@ dist-ssr
 *.local
 .env
 .env.*
-! .env.example
-.vscode/*
-!.vscode/extensions.json
+!.env.example
+.vscode/
 .idea
 *.suo
 *.ntvs*

@@ -8,50 +8,53 @@
     z-index: 2000;
     display: flex;
     justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
+    align-items: flex-start;
+    padding-top: 2rem;
+    backdrop-filter: blur(8px);
     animation: fadeIn 0.3s ease-out;
+    overflow-y: auto;
 }
 
 .videoModal__content {
     position: relative;
-    width: 85%;
-    max-width: 1000px;
+    width: 90%;
+    max-width: 900px;
     background-color: #181818;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
     animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-bottom: 2rem;
 }
 
 .videoModal__close {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.6);
+    top: 12px;
+    right: 12px;
+    background: rgba(20, 20, 20, 0.8);
     border: none;
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     z-index: 10;
-    font-size: 1.2rem;
+    font-size: 1rem;
     transition: all 0.2s;
+    backdrop-filter: blur(4px);
 }
 
 .videoModal__close:hover {
-    background: white;
-    color: black;
+    background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
 }
 
 .videoModal__playerWrapper {
     position: relative;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    padding-top: 56.25%;
     background: black;
 }
 
@@ -63,50 +66,18 @@
     height: 100%;
 }
 
-.videoModal__info {
-    padding: 25px 40px;
-}
-
-.videoModal__info h2 {
-    color: white;
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-}
-
-.videoModal__info p {
-    color: #aaa;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.videoModal__info p::before {
-    content: "4K";
-    border: 1px solid #aaa;
-    padding: 1px 4px;
-    font-size: 0.7rem;
-    border-radius: 2px;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.9); opacity: 0; }
+    from { transform: scale(0.95); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
 
 @media (max-width: 768px) {
     .videoModal__content {
         width: 95%;
-    }
-    .videoModal__info {
-        padding: 15px 20px;
-    }
-    .videoModal__info h2 {
-        font-size: 1.3rem;
     }
 }

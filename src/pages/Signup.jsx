@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authApi from '../services/authApi';
+import { useAuth } from '../context/AuthContext';
 import './Signup.css';
 
 const Signup = () => {
@@ -8,10 +9,11 @@ const Signup = () => {
         name: '',
         mobile: '',
         email: '',
-        password: ''
+        password: '',
     });
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,10 +22,15 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await authApi.signup(formData);
+            const data = await authApi.signup(formData);
+            if (data?.session?.access_token && data?.user) {
+                login(data.user, data.session.access_token);
+                navigate('/');
+                return;
+            }
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.message || 'Signup failed');
+            setError(err.message || 'Signup failed');
         }
     };
 
@@ -37,6 +44,11 @@ const Signup = () => {
                     <div className="signup-form-container">
                         <h1>Sign Up</h1>
                         {error && <div className="error-message">{error}</div>}
+                        {import.meta.env.VITE_AUTH_DEMO === 'true' && (
+                            <p className="text-xs text-cyan-200/80 mb-3 font-[Rajdhani,sans-serif]">
+                                Signup needs Supabase. For a quick tour use demo login on the sign-in page.
+                            </p>
+                        )}
                         <form onSubmit={handleSubmit}>
                             <input
                                 type="text"

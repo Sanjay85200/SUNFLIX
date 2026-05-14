@@ -1,0 +1,49 @@
+.sunflix-page {
+    min-height: 100vh;
+    padding: 100px 4% 80px;
+    position: relative;
+    z-index: 1;
+}
+
+.sunflix-page__hero {
+    max-width: 900px;
+    margin-bottom: 2rem;
+}
+
+.sunflix-page__title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, #a5f3fc, #c4b5fd 50%, #f0abfc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.sunflix-page__lead {
+    margin-top: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    max-width: 640px;
+}
+
+.sunflix-glass {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.45);
+}
+
+.sunflix-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+@media (max-width: 640px) {
+    .sunflix-page {
+        padding-top: 88px;
+    }
+}

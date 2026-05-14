@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+/**
+ * SUNFLIX — Vite + React shell: cyberpunk UI, TMDB rails, Supabase-ready data.
+ */
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+    Outlet,
+    useLocation,
+    useOutletContext,
+} from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
@@ -8,68 +19,218 @@ import Row from './components/Row';
 import requests from './services/api';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AnimeUniverse from './pages/AnimeUniverse';
+import Profile from './pages/Profile';
+import Rewards from './pages/Rewards';
+import WatchParty from './pages/WatchParty';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SunflixDataProvider } from './context/SunflixDataContext';
+import AIAssistant from './components/AIAssistant';
+import SunflixDrop from './components/SunflixDrop';
+import VideoModal from './components/VideoModal';
+import VortexCarousel from './components/VortexCarousel';
+import ParticleBackground from './components/ParticleBackground';
+import CategoryPills from './components/CategoryPills';
+import CommunityFeedStrip from './components/CommunityFeedStrip';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
-
-    if (loading) return null;
+    if (loading) {
+        return (
+            <div
+                className="min-h-screen bg-black flex items-center justify-center text-cyan-300/80 tracking-[0.35em] text-xs uppercase"
+                style={{ fontFamily: 'Orbitron, sans-serif' }}
+            >
+                Syncing
+            </div>
+        );
+    }
     if (!user) return <Navigate to="/login" />;
-
     return children;
 };
 
-import SunflixDrop from './components/SunflixDrop';
-import VideoModal from './components/VideoModal';
+const categories = [
+    { id: 28, name: 'Action', fetchUrl: requests.fetchActionMovies },
+    { id: 35, name: 'Comedy', fetchUrl: requests.fetchComedyMovies },
+    { id: 27, name: 'Horror', fetchUrl: requests.fetchHorrorMovies },
+    { id: 10749, name: 'Romance', fetchUrl: requests.fetchRomanceMovies },
+];
 
-function AppContent() {
+function HomePage() {
+    const { onMovieSelect } = useOutletContext();
+    const [activeCategory, setActiveCategory] = useState(categories[0]);
+
+    return (
+        <>
+            <Banner onPlayMovie={onMovieSelect} />
+            <VortexCarousel title="SUNFLIX ORIGINALS" fetchUrl={requests.fetchNetflixOriginals} onMovieSelect={onMovieSelect} />
+            <CommunityFeedStrip />
+
+            <Row title="Trending Now" fetchUrl={requests.fetchTrending} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="SUN AI Curated Picks" fetchUrl={requests.fetchAIPicks} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
+            <Row title="Anime Universe" fetchUrl={requests.fetchAnimeUniverse} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
+            <Row title="Telugu Spotlight" fetchUrl={requests.fetchTelugu} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Sci‑Fi Frontier" fetchUrl={requests.fetchSciFi} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Horror After Dark" fetchUrl={requests.fetchHorrorMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Gaming & Adaptations" fetchUrl={requests.fetchGamingContent} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Thriller Pulse" fetchUrl={requests.fetchThriller} onMovieSelect={onMovieSelect} />
+
+            <CategoryPills categories={categories} activeCategory={activeCategory.id} onCategoryChange={setActiveCategory} />
+            <Row
+                key={activeCategory.id}
+                title={`${activeCategory.name} Highlights`}
+                fetchUrl={activeCategory.fetchUrl}
+                onMovieSelect={onMovieSelect}
+                isLargeRow
+            />
+
+            <Row title="Top Rated" fetchUrl={requests.fetchTopRated} onMovieSelect={onMovieSelect} />
+            <Row title="Action Movies" fetchUrl={requests.fetchActionMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Comedy Movies" fetchUrl={requests.fetchComedyMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Romance Movies" fetchUrl={requests.fetchRomanceMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Documentaries" fetchUrl={requests.fetchDocumentaries} onMovieSelect={onMovieSelect} />
+        </>
+    );
+}
+
+function AnimePage() {
+    const { onMovieSelect } = useOutletContext();
+    return <AnimeUniverse onMovieSelect={onMovieSelect} />;
+}
+
+function SearchResultsView({ searchTitle, isLoadingSearch, searchResults, onMovieSelect }) {
+    return (
+        <div className="search-results">
+            <div className="search-results__header">
+                <p>
+                    Showing results for: <span>&quot;{searchTitle}&quot;</span>
+                </p>
+            </div>
+            {isLoadingSearch ? (
+                <div className="no-results">Searching...</div>
+            ) : searchResults.length > 0 ? (
+                <Row title="Search Results" moviesData={searchResults} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
+            ) : (
+                <div className="no-results">
+                    No movies found for &quot;{searchTitle}&quot;. Try another search.
+                </div>
+            )}
+        </div>
+    );
+}
+
+function AppShell() {
     const { justLoggedIn, setJustLoggedIn } = useAuth();
-    const [showDrop, setShowDrop] = React.useState(false);
-    const [selectedMovie, setSelectedMovie] = React.useState(null);
-    const [searchResults, setSearchResults] = React.useState([]);
-    const [isSearching, setIsSearching] = React.useState(false);
-    const [searchTitle, setSearchTitle] = React.useState("");
+    const location = useLocation();
+    const [showSplash, setShowSplash] = useState(false);
+    const [selectedMovie, setSelectedMovie] = useState(null);
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchTitle, setSearchTitle] = useState('');
+    const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+    const [isAIOpen, setIsAIOpen] = useState(false);
 
-    const handleSearch = async (query) => {
-        if (!query || query.trim() === "") {
-            setIsSearching(false);
-            setSearchResults([]);
-            setSearchTitle("");
+    useEffect(() => {
+        if (location.pathname !== '/') {
+            setShowSplash(false);
             return;
         }
+        let needSplash = false;
+        try {
+            needSplash = justLoggedIn || !sessionStorage.getItem('sunflix_boot');
+        } catch {
+            needSplash = true;
+        }
+        setShowSplash(needSplash);
+    }, [location.pathname, justLoggedIn]);
 
+    const handleSplashComplete = () => {
+        try {
+            sessionStorage.setItem('sunflix_boot', '1');
+        } catch {
+            /* ignore */
+        }
+        setShowSplash(false);
+        setJustLoggedIn(false);
+    };
+
+    const handleSearch = async (query) => {
+        if (!query || query.trim() === '') {
+            setIsSearching(false);
+            setSearchResults([]);
+            setSearchTitle('');
+            return;
+        }
         setIsSearching(true);
+        setIsLoadingSearch(true);
         setSearchTitle(query);
         try {
             const response = await axios.get(requests.fetchSearch(query));
-            setSearchResults(response.data.items || []);
+            setSearchResults(response.data.results || []);
         } catch (error) {
-            console.error("Search error:", error);
-            // Optional: Filter local categories for matches as fallback
-            setSearchResults([]); 
+            console.error('Search error:', error);
+            setSearchResults([]);
+        } finally {
+            setIsLoadingSearch(false);
         }
     };
 
     const clearSearch = () => {
         setIsSearching(false);
         setSearchResults([]);
-        setSearchTitle("");
+        setSearchTitle('');
     };
 
-    React.useEffect(() => {
-        if (justLoggedIn) {
-            setShowDrop(true);
-        }
-    }, [justLoggedIn]);
-
-    const handleDropComplete = () => {
-        setShowDrop(false);
-        setJustLoggedIn(false);
-    };
+    const outletContext = useMemo(
+        () => ({
+            onMovieSelect: setSelectedMovie,
+        }),
+        []
+    );
 
     return (
+        <>
+            {showSplash && <SunflixDrop onComplete={handleSplashComplete} />}
+            <div className="app">
+                <ParticleBackground />
+                <Navbar
+                    onSearch={handleSearch}
+                    onClearSearch={clearSearch}
+                    onToggleAI={() => setIsAIOpen((v) => !v)}
+                />
+
+                {isSearching ? (
+                    <SearchResultsView
+                        searchTitle={searchTitle}
+                        isLoadingSearch={isLoadingSearch}
+                        searchResults={searchResults}
+                        onMovieSelect={setSelectedMovie}
+                    />
+                ) : (
+                    <Outlet context={outletContext} />
+                )}
+
+                <footer className="footer">
+                    <p>&copy; 2026 SUNFLIX. Neural streaming universe.</p>
+                </footer>
+
+                {selectedMovie && (
+                    <VideoModal
+                        movie={selectedMovie}
+                        videoId={selectedMovie.videoId}
+                        title={selectedMovie.title}
+                        onClose={() => setSelectedMovie(null)}
+                    />
+                )}
+            </div>
+            <AIAssistant isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
+        </>
+    );
+}
+
+function AppContent() {
+    return (
         <Router>
-            {showDrop && <SunflixDrop onComplete={handleDropComplete} />}
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
@@ -77,51 +238,16 @@ function AppContent() {
                     path="/"
                     element={
                         <ProtectedRoute>
-                            <div className="app">
-                                <Navbar onSearch={handleSearch} onClearSearch={clearSearch} />
-                                {isSearching ? (
-                                    <div className="search-results">
-                                        <div className="search-results__header">
-                                            <p>Showing results for: <span>"{searchTitle}"</span></p>
-                                        </div>
-                                        <Row 
-                                            title="Search Results" 
-                                            moviesData={searchResults} 
-                                            onMovieSelect={setSelectedMovie} 
-                                            isLargeRow 
-                                        />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Banner onPlayMovie={setSelectedMovie} />
-                                        <Row title="SUNFLIX ORIGINALS" fetchUrl={requests.fetchFeaturedMovie} onMovieSelect={setSelectedMovie} isLargeRow />
-                                        <Row title="English Action Movies" fetchUrl={requests.fetchEnglishAction} onMovieSelect={setSelectedMovie} />
-                                        <Row title="English Comedy Movies" fetchUrl={requests.fetchEnglishComedy} onMovieSelect={setSelectedMovie} />
-                                        <Row title="English Romance Movies" fetchUrl={requests.fetchEnglishRomance} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Hindi Action Movies" fetchUrl={requests.fetchHindiAction} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Hindi Comedy Movies" fetchUrl={requests.fetchHindiComedy} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Hindi Romance Movies" fetchUrl={requests.fetchHindiRomance} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Telugu Hits" fetchUrl={requests.fetchTeluguMovies} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Telugu Action" fetchUrl={requests.fetchTeluguAction} onMovieSelect={setSelectedMovie} />
-                                        <Row title="Documentaries" fetchUrl={requests.fetchDocumentaries} onMovieSelect={setSelectedMovie} />
-                                    </>
-                                )}
-
-                                {selectedMovie && (
-                                    <VideoModal 
-                                        videoId={selectedMovie.videoId} 
-                                        title={selectedMovie.title} 
-                                        onClose={() => setSelectedMovie(null)} 
-                                    />
-                                )}
-
-                                <footer className="footer">
-                                    <p>&copy; 2024 SUNFLIX. All Rights Reserved.</p>
-                                </footer>
-                            </div>
+                            <AppShell />
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route index element={<HomePage />} />
+                    <Route path="anime" element={<AnimePage />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="rewards" element={<Rewards />} />
+                    <Route path="watch-party" element={<WatchParty />} />
+                </Route>
             </Routes>
         </Router>
     );
@@ -130,7 +256,9 @@ function AppContent() {
 function App() {
     return (
         <AuthProvider>
-            <AppContent />
+            <SunflixDataProvider>
+                <AppContent />
+            </SunflixDataProvider>
         </AuthProvider>
     );
 }

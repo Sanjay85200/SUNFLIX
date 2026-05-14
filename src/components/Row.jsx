@@ -1,11 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, FreeMode } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/free-mode';
 import './Row.css';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import FloatingMovieCard from './FloatingMovieCard';
+import { motion } from 'framer-motion';
+import { enrichMovieForModal } from '../services/api';
 
-const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false }) => {
+const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, accent = 'red' }) => {
     const [movies, setMovies] = useState([]);
-    const rowRef = useRef(null);
 
     useEffect(() => {
         if (moviesData) {
@@ -16,134 +22,75 @@ const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false })
         async function fetchData() {
             try {
                 const request = await axios.get(fetchUrl);
-                let items = request.data.items || [];
-                
-                // Filter results checking titles for "full movie" or "hd"
-                items = items.filter(movie => {
-                    const titleLower = movie.snippet?.title?.toLowerCase() || "";
-                    // Only display items that have videoId and highres thumbnails
-                    const hasValidImage = movie.snippet?.thumbnails?.high?.url;
-                    const hasVideoId = movie.id?.videoId;
-                    return hasValidImage && hasVideoId && (titleLower.includes("full movie") || titleLower.includes("hd"));
-                });
-
-                setMovies(items);
+                setMovies(request.data.results || []);
             } catch (error) {
-                console.error("Error fetching from YouTube:", error);
-                const titleLower = title.toLowerCase();
-                let fallbackItems = [];
-
-                if (titleLower.includes("telugu")) {
-                    fallbackItems = [
-                        { id: { videoId: "9qCXv-O3c8o" }, snippet: { title: "Baahubali: The Beginning (Telugu) Full Movie HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1596727147705-611529eb4bf7?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "W98pXvUa7g4" }, snippet: { title: "Pushpa The Rise - Telugu Action Full Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jfKfPfyJRdk" }, snippet: { title: "Ala Vaikunthapurramuloo Full Movie HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "3jz48VPTzT8" }, snippet: { title: "RRR - Full Telugu Blockbuster HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1580130601254-05fa235ae8cb?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jNQXAC9IVRw" }, snippet: { title: "KGF Chapter 1 (Telugu Dub) Full HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "tVlcKp3bWH8" }, snippet: { title: "Arjun Reddy Full Telugu Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop" } } } }
-                    ];
-                } else if (titleLower.includes("hindi")) {
-                    fallbackItems = [
-                        { id: { videoId: "dQw4w9WgXcQ" }, snippet: { title: "Dangal - Hindi Full Movie HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jfKfPfyJRdk" }, snippet: { title: "3 Idiots - Hindi Comedy Full Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "3jz48VPTzT8" }, snippet: { title: "Sholay Classic Full Movie HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jNQXAC9IVRw" }, snippet: { title: "Lagaan Hindi Full Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1509281373149-e957c6296406?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "kJQP7kiw5Fk" }, snippet: { title: "PK Bollywood Blockbuster HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "tVlcKp3bWH8" }, snippet: { title: "Gully Boy Hindi Movie Full", thumbnails: { high: { url: "https://images.unsplash.com/photo-1520004434532-6d5ebcb6524b?q=80&w=600&auto=format&fit=crop" } } } }
-                    ];
-                } else {
-                    fallbackItems = [
-                        { id: { videoId: "dQw4w9WgXcQ" }, snippet: { title: "Inception Full Movie English HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jfKfPfyJRdk" }, snippet: { title: "The Dark Knight Action Full Movie HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1497124401559-3e75ec2ed794?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "3jz48VPTzT8" }, snippet: { title: "Interstellar Free Sci-Fi Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "jNQXAC9IVRw" }, snippet: { title: "Avengers: Endgame English HD", thumbnails: { high: { url: "https://images.unsplash.com/photo-1533134486753-c833f0ed4866?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "kJQP7kiw5Fk" }, snippet: { title: "The Matrix Action Full Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1510070009289-b5bc34383727?q=80&w=600&auto=format&fit=crop" } } } },
-                        { id: { videoId: "tVlcKp3bWH8" }, snippet: { title: "Titanic Romance English Full Movie", thumbnails: { high: { url: "https://images.unsplash.com/photo-1515634928627-2a4e0dae3ddf?q=80&w=600&auto=format&fit=crop" } } } }
-                    ];
-                }
-                setMovies(fallbackItems);
+                console.error("Error fetching from TMDB:", error);
             }
         }
-        fetchData();
-    }, [fetchUrl]);
+        fetchUrl && fetchData();
+    }, [fetchUrl, moviesData]);
 
-    const scroll = (direction) => {
-        const { current } = rowRef;
-        if (direction === 'left') {
-            current.scrollLeft -= window.innerWidth - 100;
-        } else {
-            current.scrollLeft += window.innerWidth - 100;
-        }
-    };
-
-    const handleClick = (movie) => {
-        if (onMovieSelect) {
-            onMovieSelect({
-                videoId: movie.id.videoId,
-                title: movie.snippet.title
-            });
-        }
+    const handleClick = async (movie) => {
+        if (!onMovieSelect) return;
+        const enriched = await enrichMovieForModal(movie);
+        onMovieSelect(enriched);
     };
 
     return (
-        <div className="row">
-            <h2 className="row__title">
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className={`row px-[4%] py-8 relative ${accent === 'neon' ? 'row--neon' : ''}`}
+        >
+            <h2 className="text-white text-xl font-bold mb-4 font-inter tracking-wide flex items-center gap-3">
+                <span
+                    className={
+                        accent === 'neon'
+                            ? 'w-1 h-6 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500 shadow-[0_0_14px_rgba(34,211,238,0.55)]'
+                            : 'w-1 h-6 bg-netflix-red rounded-full shadow-[0_0_12px_rgba(229,9,20,0.6)]'
+                    }
+                />
                 {title}
-                <span className="row__arrowIndicator">&nbsp;&gt;</span>
             </h2>
 
-            <div className="row__container">
-                <div className="row__arrow left" onClick={() => scroll('left')}>
-                    <FaChevronLeft className="arrow__icon" />
-                </div>
-
-                <div className="row__posters" ref={rowRef}>
-                    {movies.map((movie) => {
-                        const thumbnailUrl = movie.snippet?.thumbnails?.high?.url;
-                        const title = movie.snippet?.title;
-                        const videoId = movie.id?.videoId;
-
-                        return (
-                            <div key={videoId} className={`row__posterWrapper ${isLargeRow && 'row__posterLargeWrapper'}`} onClick={() => handleClick(movie)}>
-                                <div className="row__posterContent">
-                                    <div className="row__posterMain">
-                                        <img
-                                            className={`row__poster ${isLargeRow && 'row__posterLarge'}`}
-                                            src={thumbnailUrl}
-                                            alt={title}
-                                        />
-                                        <div className="row__branding">
-                                            <span className="row__netflixLogo">N</span>
-                                        </div>
-                                        {Math.random() > 0.7 && (
-                                            <div className="row__badge">
-                                                <span>NEW EPISODE</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="row__posterMetadata">
-                                        <div className="row__metadataIcons">
-                                            <span className="match">98% Match</span>
-                                            <span className="rating">U/A 16+</span>
-                                        </div>
-                                        <p className="row__metadataTitle">{title}</p>
-                                        <div className="row__metadataTags">
-                                            <span>Action</span>
-                                            <span className="dot">•</span>
-                                            <span>Exciting</span>
-                                        </div>
-                                    </div>
-                                </div>
+            <div className="row__container overflow-visible">
+                <Swiper
+                    modules={[Navigation, FreeMode]}
+                    grabCursor={true}
+                    freeMode={{ enabled: true, sticky: false }}
+                    slidesPerView={'auto'}
+                    spaceBetween={isLargeRow ? 16 : 12}
+                    navigation={true}
+                    className="swiper-container !overflow-visible !py-4"
+                    breakpoints={{
+                        320: { slidesPerView: isLargeRow ? 2 : 3, spaceBetween: 8 },
+                        480: { slidesPerView: isLargeRow ? 3 : 4, spaceBetween: 10 },
+                        768: { slidesPerView: isLargeRow ? 4 : 5, spaceBetween: 12 },
+                        1024: { slidesPerView: isLargeRow ? 5 : 6, spaceBetween: 14 },
+                        1440: { slidesPerView: isLargeRow ? 6 : 7, spaceBetween: 16 }
+                    }}
+                >
+                    {movies.map((movie) => (
+                        <SwiperSlide
+                            key={movie.id}
+                            className="!h-auto"
+                            style={{ perspective: "1200px" }}
+                        >
+                            <div className={isLargeRow ? "h-[300px] sm:h-[360px]" : "h-[160px] sm:h-[180px]"}>
+                                <FloatingMovieCard
+                                    movie={movie}
+                                    isLargeRow={isLargeRow}
+                                    onClick={handleClick}
+                                    accent={accent}
+                                />
                             </div>
-                        );
-                    })}
-                </div>
-
-                <div className="row__arrow right" onClick={() => scroll('right')}>
-                    <FaChevronRight className="arrow__icon" />
-                </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

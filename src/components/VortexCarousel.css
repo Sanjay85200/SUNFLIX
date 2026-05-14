@@ -1,0 +1,129 @@
+.vortex-section {
+    height: 700px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at center, rgba(229, 9, 20, 0.15) 0%, transparent 60%);
+    margin-bottom: 5vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.vortex-title {
+    font-family: var(--font-futuristic);
+    font-size: 1.5vw;
+    color: var(--white);
+    padding-left: 4%;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    z-index: 10;
+}
+
+.vortex-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1500px;
+}
+
+.vortex-core {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: var(--netflix-red);
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.6;
+    animation: pulse 4s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); opacity: 0.4; }
+    to { transform: scale(1.5); opacity: 0.8; }
+}
+
+.vortex-scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vortex-card {
+    position: absolute;
+    width: 240px;
+    height: 340px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+}
+
+.vortex-card-content {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.3s;
+}
+
+.vortex-card:hover .vortex-card-content {
+    border-color: var(--netflix-red);
+}
+
+.vortex-card-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.vortex-card:hover img {
+    opacity: 1;
+}
+
+.vortex-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+.vortex-index {
+    position: absolute;
+    top: -40px;
+    left: 10px;
+    font-size: 8rem;
+    font-family: var(--font-title);
+    color: rgba(255, 255, 255, 0.05);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.vortex-card-overlay h3 {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: white;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .vortex-section { height: 500px; }
+    .vortex-card { width: 150px; height: 210px; }
+    .vortex-title { font-size: 1.2rem; }
+}

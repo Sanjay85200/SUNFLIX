@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authApi from '../services/authApi';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +18,7 @@ const Login = () => {
             login(response.data.user, response.data.token);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(err.message || 'Login failed');
         }
     };
 
@@ -32,6 +32,12 @@ const Login = () => {
                     <div className="login-form-container">
                         <h1>Sign In</h1>
                         {error && <div className="error-message">{error}</div>}
+                        {import.meta.env.DEV && (
+                            <p className="text-xs text-cyan-200/75 mb-3 font-[Rajdhani,sans-serif]">
+                                Quick start: <strong>demo@sunflix.app</strong> / <strong>demo</strong> works in dev when
+                                Supabase env vars are not set.
+                            </p>
+                        )}
                         <form onSubmit={handleSubmit}>
                             <input
                                 type="email"
