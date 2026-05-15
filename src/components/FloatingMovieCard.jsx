@@ -64,7 +64,7 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
             }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            onClick={() => onClick(movie)}
+            onTap={() => onClick(movie)}
             whileHover={{ scale: 1.06, z: 40 }}
             transition={{ type: 'spring', stiffness: 320, damping: 22 }}
             className={`relative h-full w-full cursor-pointer rounded-xl overflow-hidden group ring-1 ring-white/5 ${neonRing}`}
