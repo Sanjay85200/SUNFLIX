@@ -74,6 +74,27 @@ const authApi = {
         if (error) throw new Error(error.message);
         return data;
     },
+
+    verifyOtp: async ({ email, otp }) => {
+        if (!isSupabaseConfigured || !supabase) {
+            throw new Error('Supabase is not configured.');
+        }
+
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token: otp,
+            type: 'signup',
+        });
+        
+        if (error) throw new Error(error.message);
+
+        return {
+            data: {
+                user: data.user,
+                token: data.session?.access_token,
+            },
+        };
+    },
 };
 
 export default authApi;

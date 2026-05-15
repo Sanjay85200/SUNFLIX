@@ -80,3 +80,16 @@
 .login-link:hover {
     text-decoration: underline;
 }
+
+.otp-instruction {
+    color: #b3b3b3;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.otp-instruction strong {
+    color: white;
+    font-weight: 500;
+}
