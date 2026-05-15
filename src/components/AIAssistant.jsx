@@ -24,27 +24,57 @@ const AIAssistant = ({ isOpen, onClose }) => {
         {
             role: 'ai',
             content:
-                'SUN AI online. I fuse your orbit — watch history, moods, and genres — to steer you toward the perfect session. Try a quick prompt or tap a chip; live Gemini / OpenAI wiring lands when you add API keys server-side.',
+                'SUN AI online. I fuse your orbit — watch history, moods, and genres — to steer you toward the perfect session. How can I help you today?',
         },
     ]);
     const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const pushAiMessage = useCallback((text) => {
         setMessages((prev) => [...prev, { role: 'ai', content: text }]);
     }, []);
 
-    const handleSend = (textOverride) => {
+    const handleSend = async (textOverride) => {
         const text = (textOverride ?? input).trim();
-        if (!text) return;
+        if (!text || isLoading) return;
 
-        setMessages((prev) => [...prev, { role: 'user', content: text }]);
+        const newMessages = [...messages, { role: 'user', content: text }];
+        setMessages(newMessages);
         setInput('');
+        setIsLoading(true);
 
-        setTimeout(() => {
-            pushAiMessage(
-                `Locked on “${text}”. Demo mode: wire this drawer to your Supabase watch graph + a Gemini or OpenAI route, and I will rank titles with explanations, trailers, and mood tags in real time.`
-            );
-        }, 650);
+        try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'llama3-8b-8192',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are SUN AI, a cinematic movie curator for SUNFLIX. Recommend movies/shows based on mood and genre. Keep answers concise, engaging, and cinematic. Do not use markdown like asterisks or bolding, just plain text.'
+                        },
+                        ...newMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 256
+                })
+            });
+
+            if (!response.ok) throw new Error('API Error');
+
+            const data = await response.json();
+            const aiResponse = data.choices[0].message.content;
+            pushAiMessage(aiResponse);
+        } catch (error) {
+            console.error('SUN AI error:', error);
+            pushAiMessage('I am currently experiencing interference. Please try again later.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const startVoice = () => {
@@ -116,6 +146,13 @@ const AIAssistant = ({ isOpen, onClose }) => {
                                     {msg.content}
                                 </div>
                             ))}
+                            {isLoading && (
+                                <div className="ai-message ai-msg">
+                                    <div className="typing-indicator">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="ai-input-area">
