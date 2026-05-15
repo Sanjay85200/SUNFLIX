@@ -86,6 +86,11 @@ const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, a
                                     accent={accent}
                                 />
                             </div>
+                            <div className="mt-2 px-1">
+                                <h3 className="text-white/90 font-medium text-sm truncate w-full">
+                                    {movie.title || movie.name}
+                                </h3>
+                            </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>

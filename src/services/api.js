@@ -24,6 +24,16 @@ export const requests = {
     fetchGamingContent: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_keywords=239722&sort_by=popularity.desc`,
 };
 
+export const languageRequests = {
+    fetchEnglish: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=en&sort_by=popularity.desc`,
+    fetchHindi: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=hi&sort_by=popularity.desc`,
+    fetchTelugu: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=te&sort_by=popularity.desc`,
+    fetchTamil: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=ta&sort_by=popularity.desc`,
+    fetchJapanese: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=ja&sort_by=popularity.desc`,
+    fetchKorean: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=ko&sort_by=popularity.desc`,
+    fetchSpanish: `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&with_original_language=es&sort_by=popularity.desc`,
+};
+
 export const imageBaseUrl = 'https://image.tmdb.org/t/p/original/';
 
 /** TMDB trending “all” includes media_type; discover rows infer from shape */

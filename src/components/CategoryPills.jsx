@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const CategoryPills = ({ categories, activeCategory, onCategoryChange }) => {
+const CategoryPills = ({ categories, activeCategory, onCategoryChange, title = "Categories", highlight = "Explore" }) => {
   return (
     <div className="py-12 px-[4%] text-center">
       <h2 className="text-white text-3xl font-bold mb-8">
-        <span className="text-netflix-red">Explore</span> Categories
+        <span className="text-netflix-red">{highlight}</span> {title}
       </h2>
       <div className="flex flex-wrap justify-center gap-4">
         {categories.map((category) => (

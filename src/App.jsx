@@ -16,7 +16,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import Row from './components/Row';
-import requests from './services/api';
+import requests, { languageRequests } from './services/api';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AnimeUniverse from './pages/AnimeUniverse';
@@ -56,9 +56,20 @@ const categories = [
     { id: 10749, name: 'Romance', fetchUrl: requests.fetchRomanceMovies },
 ];
 
+const languages = [
+    { id: 'en', name: 'English', fetchUrl: languageRequests.fetchEnglish },
+    { id: 'hi', name: 'Hindi', fetchUrl: languageRequests.fetchHindi },
+    { id: 'te', name: 'Telugu', fetchUrl: languageRequests.fetchTelugu },
+    { id: 'ta', name: 'Tamil', fetchUrl: languageRequests.fetchTamil },
+    { id: 'ja', name: 'Japanese', fetchUrl: languageRequests.fetchJapanese },
+    { id: 'ko', name: 'Korean', fetchUrl: languageRequests.fetchKorean },
+    { id: 'es', name: 'Spanish', fetchUrl: languageRequests.fetchSpanish },
+];
+
 function HomePage() {
     const { onMovieSelect } = useOutletContext();
     const [activeCategory, setActiveCategory] = useState(categories[0]);
+    const [activeLanguage, setActiveLanguage] = useState(languages[0]);
 
     return (
         <>
@@ -75,13 +86,22 @@ function HomePage() {
             <Row title="Gaming & Adaptations" fetchUrl={requests.fetchGamingContent} onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="Thriller Pulse" fetchUrl={requests.fetchThriller} onMovieSelect={onMovieSelect} />
 
-            <CategoryPills categories={categories} activeCategory={activeCategory.id} onCategoryChange={setActiveCategory} />
+            <CategoryPills categories={categories} activeCategory={activeCategory.id} onCategoryChange={setActiveCategory} title="Categories" highlight="Explore" />
             <Row
-                key={activeCategory.id}
+                key={`cat-${activeCategory.id}`}
                 title={`${activeCategory.name} Highlights`}
                 fetchUrl={activeCategory.fetchUrl}
                 onMovieSelect={onMovieSelect}
                 isLargeRow
+            />
+
+            <CategoryPills categories={languages} activeCategory={activeLanguage.id} onCategoryChange={setActiveLanguage} title="Languages" highlight="Select" />
+            <Row
+                key={`lang-${activeLanguage.id}`}
+                title={`${activeLanguage.name} Cinema`}
+                fetchUrl={activeLanguage.fetchUrl}
+                onMovieSelect={onMovieSelect}
+                accent="neon"
             />
 
             <Row title="Top Rated" fetchUrl={requests.fetchTopRated} onMovieSelect={onMovieSelect} />
