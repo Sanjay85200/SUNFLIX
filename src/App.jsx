@@ -45,7 +45,7 @@ const ProtectedRoute = ({ children }) => {
             </div>
         );
     }
-    if (!user) return <Navigate to="/login" />;
+    // Auth check removed to allow public access
     return children;
 };
 
@@ -232,8 +232,8 @@ function AppContent() {
     return (
         <Router>
             <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="/signup" element={<Navigate to="/" replace />} />
                 <Route
                     path="/"
                     element={
