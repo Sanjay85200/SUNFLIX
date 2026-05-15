@@ -48,20 +48,25 @@
 
 @media (max-width: 768px) {
     .banner {
-        height: 70vh;
-        min-height: 450px;
+        height: 60vh;
+        min-height: 400px;
     }
 
     .banner__content {
-        margin-bottom: 20%;
-        max-width: 90%;
+        margin-bottom: 15%;
+        max-width: 95%;
     }
 
     .banner__title {
-        font-size: 1.8rem;
+        font-size: clamp(1.4rem, 6vw, 2rem);
     }
 
     .banner__description {
         font-size: 0.85rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 }

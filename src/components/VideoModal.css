@@ -77,7 +77,19 @@
 }
 
 @media (max-width: 768px) {
+    .videoModal {
+        padding-top: 0;
+    }
     .videoModal__content {
-        width: 95%;
+        width: 100%;
+        margin-bottom: 0;
+        border-radius: 0;
+        min-height: 100dvh;
+    }
+    .videoModal__close {
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
     }
 }

@@ -172,6 +172,16 @@
     }
 
     .navbar__search--open {
-        width: min(200px, 42vw);
+        position: absolute;
+        right: 4%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: min(260px, 70vw);
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(34, 211, 238, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        z-index: 100;
+        padding: 8px 12px;
     }
 }

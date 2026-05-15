@@ -15,6 +15,7 @@
     right: 0;
     width: min(420px, 100vw);
     height: 100vh;
+    height: 100dvh;
     background: linear-gradient(165deg, rgba(15, 23, 42, 0.92), rgba(0, 0, 0, 0.88));
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
@@ -246,5 +247,14 @@
 @media (max-width: 500px) {
     .ai-drawer {
         width: 100vw;
+    }
+    .ai-header {
+        padding: 15px;
+    }
+    .ai-chat-area {
+        padding: 15px;
+    }
+    .ai-input-area {
+        padding: 12px 15px 16px;
     }
 }

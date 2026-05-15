@@ -86,7 +86,7 @@ const Banner = ({ onPlayMovie }) => {
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-3 mt-6">
+                <div className="flex items-center gap-3 mt-6 flex-wrap">
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -100,14 +100,14 @@ const Banner = ({ onPlayMovie }) => {
                                 setPlayLoading(false);
                             }
                         }}
-                        className="flex items-center gap-2 bg-white text-black px-7 py-2.5 rounded font-bold text-base hover:bg-white/90 transition-all shadow-xl disabled:opacity-60"
+                        className="flex items-center gap-2 bg-white text-black px-5 sm:px-7 py-2 sm:py-2.5 rounded font-bold text-sm sm:text-base hover:bg-white/90 transition-all shadow-xl disabled:opacity-60"
                     >
                         <FaPlay className="text-sm" /> {playLoading ? 'Loading…' : 'Play'}
                     </motion.button>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-7 py-2.5 rounded font-bold text-base hover:bg-white/30 transition-all border border-white/10"
+                        className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 sm:px-7 py-2 sm:py-2.5 rounded font-bold text-sm sm:text-base hover:bg-white/30 transition-all border border-white/10"
                     >
                         <FaInfoCircle className="text-sm" /> More Info
                     </motion.button>

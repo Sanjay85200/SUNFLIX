@@ -42,7 +42,7 @@ const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, a
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
-            className={`row px-[4%] py-8 relative ${accent === 'neon' ? 'row--neon' : ''}`}
+            className={`row px-[4%] py-8 relative w-full max-w-[100vw] overflow-x-clip overflow-y-visible ${accent === 'neon' ? 'row--neon' : ''}`}
         >
             <h2 className="text-white text-xl font-bold mb-4 font-inter tracking-wide flex items-center gap-3">
                 <span
