@@ -6,13 +6,15 @@ import './Login.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState('');
+    const [isOtpSent, setIsOtpSent] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const handleSubmit = async (e) => {
+    const handleSendOtp = async (e) => {
         e.preventDefault();
         setError('');
         setSuccessMessage('');
@@ -27,9 +29,29 @@ const Login = () => {
             }
 
             await authApi.loginWithOtp(email);
-            setSuccessMessage('Secure link sent! Check your email to enter the neural net.');
+            setIsOtpSent(true);
+            setSuccessMessage('A 6-digit code has been sent to your email.');
         } catch (err) {
-            setError(err.message || 'Login failed');
+            setError(err.message || 'Failed to send code');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            const result = await authApi.verifyOtp({ email, otp });
+            if (result.data?.token && result.data?.user) {
+                login(result.data.user, result.data.token);
+                navigate('/');
+            } else {
+                setError('Verification failed. Please try again.');
+            }
+        } catch (err) {
+            setError(err.message || 'Invalid code');
         } finally {
             setLoading(false);
         }
@@ -43,32 +65,58 @@ const Login = () => {
                 </nav>
                 <div className="login-body">
                     <div className="login-form-container">
-                        <h1>Enter the Neural Net</h1>
+                        <h1>{isOtpSent ? 'Verify Access Code' : 'Enter the Neural Net'}</h1>
                         {error && <div className="error-message">{error}</div>}
                         {successMessage && (
                             <div className="bg-cyan-500/20 border border-cyan-500/50 text-cyan-200 px-4 py-3 rounded mb-4 text-sm font-medium">
                                 {successMessage}
                             </div>
                         )}
-                        {import.meta.env.DEV && (
+                        {import.meta.env.DEV && !isOtpSent && (
                             <p className="text-xs text-cyan-200/75 mb-3 font-[Rajdhani,sans-serif]">
                                 Quick start: <strong>demo@sunflix.app</strong> bypasses OTP in dev mode.
                             </p>
                         )}
-                        <form onSubmit={handleSubmit}>
-                            <input
-                                type="email"
-                                placeholder="Enter your email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <button type="submit" className="login-button" disabled={loading}>
-                                {loading ? 'Transmitting...' : 'Send Magic Link'}
-                            </button>
-                        </form>
+                        
+                        {!isOtpSent ? (
+                            <form onSubmit={handleSendOtp}>
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <button type="submit" className="login-button" disabled={loading}>
+                                    {loading ? 'Transmitting...' : 'Send Access Code'}
+                                </button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleVerifyOtp}>
+                                <input
+                                    type="text"
+                                    placeholder="Enter 6-Digit Code"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    maxLength={6}
+                                    required
+                                    className="text-center tracking-[0.5em] font-bold text-lg"
+                                />
+                                <button type="submit" className="login-button" disabled={loading}>
+                                    {loading ? 'Verifying...' : 'Verify & Enter'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => { setIsOtpSent(false); setSuccessMessage(''); setOtp(''); }}
+                                    className="w-full mt-4 text-white/50 hover:text-white transition-colors text-sm"
+                                >
+                                    ← Change Email Address
+                                </button>
+                            </form>
+                        )}
+                        
                         <div className="login-footer">
-                            <span className="new-to">Sign In / Sign Up via secure Magic Link. </span>
+                            <span className="new-to">Sign In / Sign Up securely via Email.</span>
                         </div>
                     </div>
                 </div>

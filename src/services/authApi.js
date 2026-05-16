@@ -101,7 +101,7 @@ const authApi = {
         const { data, error } = await supabase.auth.verifyOtp({
             email,
             token: otp,
-            type: 'signup',
+            type: 'email',
         });
         
         if (error) throw new Error(error.message);
