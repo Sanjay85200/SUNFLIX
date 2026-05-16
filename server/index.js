@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 // Health check route
 app.get('/api/health', (req, res) => {
-    res.json({ message: "SUNFLIX Backend is running!" });
+    res.json({ message: "Sunflix Backend is running!" });
 });
 
 // Handle client-side routing: for any GET request that doesn't 

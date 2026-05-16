@@ -55,7 +55,7 @@ const AIAssistant = ({ isOpen, onClose }) => {
                     messages: [
                         {
                             role: 'system',
-                            content: 'You are SUN AI, a cinematic movie curator for SUNFLIX. Recommend movies/shows based on mood and genre. Keep answers concise, engaging, and cinematic. Do not use markdown like asterisks or bolding, just plain text.'
+                            content: 'You are SUN AI, a cinematic movie curator for Sunflix. Recommend movies/shows based on mood and genre. Keep answers concise, engaging, and cinematic. Do not use markdown like asterisks or bolding, just plain text.'
                         },
                         ...newMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
                     ],

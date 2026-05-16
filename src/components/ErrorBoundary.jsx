@@ -11,7 +11,7 @@ export default class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, info) {
-        console.error('[SUNFLIX]', error, info?.componentStack);
+        console.error('[Sunflix]', error, info?.componentStack);
     }
 
     render() {
@@ -32,7 +32,7 @@ export default class ErrorBoundary extends React.Component {
                         gap: '1rem',
                     }}
                 >
-                    <h1 style={{ fontSize: '1.25rem', color: '#22d3ee' }}>SUNFLIX hit a runtime error</h1>
+                    <h1 style={{ fontSize: '1.25rem', color: '#22d3ee' }}>Sunflix hit a runtime error</h1>
                     <p style={{ maxWidth: 520, opacity: 0.85, lineHeight: 1.5 }}>
                         {this.state.error?.message || 'Unknown error'}
                     </p>

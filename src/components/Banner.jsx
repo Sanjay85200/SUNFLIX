@@ -22,7 +22,7 @@ const Banner = ({ onPlayMovie }) => {
                 setMovie({
                     id: 550,
                     backdrop_path: "/hZ8KnS3S7uYySkvfx79v98pS1v.jpg",
-                    title: "SUNFLIX PREMIUM",
+                    title: "Sunflix Premium",
                     overview: "Experience the ultimate cinematic journey with our curated selection of global blockbusters and award-winning originals.",
                 });
             }
@@ -31,7 +31,7 @@ const Banner = ({ onPlayMovie }) => {
     }, []);
 
     const bannerImage = movie?.backdrop_path ? `${imageBaseUrl}${movie.backdrop_path}` : "";
-    const title = movie?.title || movie?.name || movie?.original_name || "SUNFLIX Featured";
+    const title = movie?.title || movie?.name || movie?.original_name || "Sunflix Featured";
     const rating = movie?.vote_average?.toFixed(1) || "8.5";
 
     return (

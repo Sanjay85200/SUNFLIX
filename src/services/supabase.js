@@ -7,7 +7,7 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 if (!isSupabaseConfigured) {
     console.warn(
-        '[SUNFLIX] Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env, or set VITE_AUTH_DEMO=true for local demo login.'
+        '[Sunflix] Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env, or set VITE_AUTH_DEMO=true for local demo login.'
     );
 }
 

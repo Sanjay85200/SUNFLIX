@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 /**
- * SUNFLIX — Vite + React shell: cyberpunk UI, TMDB rails, Supabase-ready data.
+ * Sunflix — Vite + React shell: cyberpunk UI, TMDB rails, Supabase-ready data.
  */
 import axios from 'axios';
 import {
@@ -32,6 +32,7 @@ import VortexCarousel from './components/VortexCarousel';
 import ParticleBackground from './components/ParticleBackground';
 import CategoryPills from './components/CategoryPills';
 import CommunityFeedStrip from './components/CommunityFeedStrip';
+import SEOMeta from './components/SEOMeta';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -74,7 +75,7 @@ function HomePage() {
     return (
         <>
             <Banner onPlayMovie={onMovieSelect} />
-            <VortexCarousel title="SUNFLIX ORIGINALS" fetchUrl={requests.fetchNetflixOriginals} onMovieSelect={onMovieSelect} />
+            <VortexCarousel title="Sunflix Originals" fetchUrl={requests.fetchNetflixOriginals} onMovieSelect={onMovieSelect} />
             <CommunityFeedStrip />
 
             <Row title="Trending Now" fetchUrl={requests.fetchTrending} onMovieSelect={onMovieSelect} accent="neon" />
@@ -231,7 +232,7 @@ function AppShell() {
                 )}
 
                 <footer className="footer">
-                    <p>&copy; 2026 SUNFLIX. Neural streaming universe.</p>
+                    <p>&copy; 2026 Sunflix. Neural streaming universe.</p>
                 </footer>
 
                 {selectedMovie && (
@@ -251,6 +252,7 @@ function AppShell() {
 function AppContent() {
     return (
         <Router>
+            <SEOMeta />
             <Routes>
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/signup" element={<Navigate to="/" replace />} />

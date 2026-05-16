@@ -1,4 +1,4 @@
--- SUNFLIX Supabase schema — Dashboard → SQL → New query → Run
+-- Sunflix Supabase schema — Dashboard → SQL → New query → Run
 -- After: Settings → API → copy Project URL + anon public key into .env
 
 -- Profiles (1:1 with auth.users)

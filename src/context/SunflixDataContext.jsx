@@ -116,7 +116,7 @@ export function SunflixDataProvider({ children }) {
                 .order('created_at', { ascending: false });
             if (!wErr) setWatchlist(wRows || []);
         } catch (e) {
-            console.warn('[SUNFLIX] Data load:', e);
+            console.warn('[Sunflix] Data load:', e);
             loadLocal();
         } finally {
             setLoading(false);
@@ -202,7 +202,7 @@ export function SunflixDataProvider({ children }) {
 
             const { error } = await supabase.from('watchlist').insert({ user_id: uid, ...row });
             if (error) {
-                console.warn('[SUNFLIX] watchlist insert', error.message);
+                console.warn('[Sunflix] watchlist insert', error.message);
                 return;
             }
             await bumpRewards(uid);
