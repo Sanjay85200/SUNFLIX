@@ -23,6 +23,7 @@ import AnimeUniverse from './pages/AnimeUniverse';
 import Profile from './pages/Profile';
 import Rewards from './pages/Rewards';
 import WatchParty from './pages/WatchParty';
+import CreatorDashboard from './pages/CreatorDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SunflixDataProvider } from './context/SunflixDataContext';
 import AIAssistant from './components/AIAssistant';
@@ -269,6 +270,7 @@ function AppContent() {
                     <Route path="profile" element={<Profile />} />
                     <Route path="rewards" element={<Rewards />} />
                     <Route path="watch-party" element={<WatchParty />} />
+                    <Route path="creator" element={<CreatorDashboard />} />
                 </Route>
             </Routes>
         </Router>

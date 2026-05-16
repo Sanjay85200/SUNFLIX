@@ -9,6 +9,7 @@ import {
     FaTimes,
     FaMicrophone,
     FaBars,
+    FaCloudUploadAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,6 +66,9 @@ const Navbar = ({ onSearch, onClearSearch, onToggleAI }) => {
             </NavLink>
             <NavLink to="/profile" className={navClass} onClick={() => setMobileOpen(false)}>
                 Profile
+            </NavLink>
+            <NavLink to="/creator" className={navClass} onClick={() => setMobileOpen(false)}>
+                Creator Studio
             </NavLink>
         </>
     );
@@ -168,6 +172,16 @@ const Navbar = ({ onSearch, onClearSearch, onToggleAI }) => {
                                 <span className="flex items-center gap-3">
                                     <FaUserCircle className="text-cyan-400/50 text-sm" />
                                     Profile & watchlist
+                                </span>
+                            </Link>
+                            <Link
+                                to="/creator"
+                                className="block px-4 py-2.5 border-b border-white/5 text-white text-xs hover:bg-white/5"
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <span className="flex items-center gap-3">
+                                    <FaCloudUploadAlt className="text-violet-400/50 text-sm" />
+                                    Creator Studio
                                 </span>
                             </Link>
                             <button

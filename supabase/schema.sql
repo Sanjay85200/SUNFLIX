@@ -53,3 +53,40 @@ create policy "parties_select" on public.watch_parties for select using (true);
 create policy "parties_insert_host" on public.watch_parties for insert with check (auth.uid() = host_id);
 
 -- Optional: Database → Replication → enable supabase_realtime for tables watchlist, watch_parties
+
+-- Creator Ecosystem
+create table if not exists public.creator_videos (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  description text,
+  category text,
+  video_url text not null,
+  thumbnail_url text,
+  views integer not null default 0,
+  likes integer not null default 0,
+  revenue_generated numeric not null default 0.0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.creator_comments (
+  id uuid primary key default gen_random_uuid(),
+  video_id uuid not null references public.creator_videos (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.creator_videos enable row level security;
+alter table public.creator_comments enable row level security;
+
+-- Policies for creator_videos
+create policy "creator_videos_select_all" on public.creator_videos for select using (true);
+create policy "creator_videos_insert_own" on public.creator_videos for insert with check (auth.uid() = creator_id);
+create policy "creator_videos_update_own" on public.creator_videos for update using (auth.uid() = creator_id);
+create policy "creator_videos_delete_own" on public.creator_videos for delete using (auth.uid() = creator_id);
+
+-- Policies for creator_comments
+create policy "creator_comments_select_all" on public.creator_comments for select using (true);
+create policy "creator_comments_insert_auth" on public.creator_comments for insert with check (auth.uid() = user_id);
+create policy "creator_comments_delete_own" on public.creator_comments for delete using (auth.uid() = user_id);
