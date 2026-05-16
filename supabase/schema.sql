@@ -90,3 +90,33 @@ create policy "creator_videos_delete_own" on public.creator_videos for delete us
 create policy "creator_comments_select_all" on public.creator_comments for select using (true);
 create policy "creator_comments_insert_auth" on public.creator_comments for insert with check (auth.uid() = user_id);
 create policy "creator_comments_delete_own" on public.creator_comments for delete using (auth.uid() = user_id);
+
+-- Personalized Features
+create table if not exists public.watch_history (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  tmdb_id integer,
+  creator_video_id uuid references public.creator_videos (id) on delete cascade,
+  media_type text,
+  title text,
+  watched_at timestamptz not null default now()
+);
+
+create table if not exists public.creator_followers (
+  id uuid primary key default gen_random_uuid(),
+  follower_id uuid not null references auth.users (id) on delete cascade,
+  creator_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique(follower_id, creator_id)
+);
+
+alter table public.watch_history enable row level security;
+alter table public.creator_followers enable row level security;
+
+create policy "watch_history_select_own" on public.watch_history for select using (auth.uid() = user_id);
+create policy "watch_history_insert_own" on public.watch_history for insert with check (auth.uid() = user_id);
+create policy "watch_history_delete_own" on public.watch_history for delete using (auth.uid() = user_id);
+
+create policy "followers_select_all" on public.creator_followers for select using (true);
+create policy "followers_insert_own" on public.creator_followers for insert with check (auth.uid() = follower_id);
+create policy "followers_delete_own" on public.creator_followers for delete using (auth.uid() = follower_id);

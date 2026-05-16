@@ -3,6 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaPlay, FaPlus, FaThumbsUp, FaStar } from 'react-icons/fa';
 import { imageBaseUrl } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import LoginPromptModal from './LoginPromptModal';
 
 const API_KEY = "8c4a151fe845b0a2a8be6231a03fed7f";
 
@@ -10,6 +12,18 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
     const [details, setDetails] = useState(null);
     const [cast, setCast] = useState([]);
     const [similar, setSimilar] = useState([]);
+    const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+    const [loginMessage, setLoginMessage] = useState('');
+    const { user } = useAuth();
+
+    const handleProtectedAction = (actionName) => {
+        if (!user || user.id === 'sunflix-demo') {
+            setLoginMessage(`You need to log in to ${actionName}.`);
+            setIsLoginPromptOpen(true);
+            return false;
+        }
+        return true;
+    };
 
     useEffect(() => {
         if (!movie) return;
@@ -59,10 +73,16 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                         >
                             <FaPlay /> Play
                         </button>
-                        <button className="w-9 h-9 rounded-full border-2 border-white/40 flex items-center justify-center hover:border-white transition-colors bg-black/30">
+                        <button 
+                            onClick={() => handleProtectedAction('add this to your watchlist')}
+                            className="w-9 h-9 rounded-full border-2 border-white/40 flex items-center justify-center hover:border-white transition-colors bg-black/30"
+                        >
                             <FaPlus className="text-sm" />
                         </button>
-                        <button className="w-9 h-9 rounded-full border-2 border-white/40 flex items-center justify-center hover:border-white transition-colors bg-black/30">
+                        <button 
+                            onClick={() => handleProtectedAction('like this video')}
+                            className="w-9 h-9 rounded-full border-2 border-white/40 flex items-center justify-center hover:border-white transition-colors bg-black/30"
+                        >
                             <FaThumbsUp className="text-sm" />
                         </button>
                     </div>
@@ -131,6 +151,12 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                     </div>
                 </div>
             )}
+            
+            <LoginPromptModal 
+                isOpen={isLoginPromptOpen} 
+                onClose={() => setIsLoginPromptOpen(false)} 
+                message={loginMessage} 
+            />
         </div>
     );
 };

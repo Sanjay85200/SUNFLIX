@@ -47,7 +47,9 @@ const ProtectedRoute = ({ children }) => {
             </div>
         );
     }
-    // Auth check removed to allow public access
+    if (!user || user.id === 'sunflix-demo') {
+        return <Navigate to="/login" replace />;
+    }
     return children;
 };
 
@@ -255,22 +257,15 @@ function AppContent() {
         <Router>
             <SEOMeta />
             <Routes>
-                <Route path="/login" element={<Navigate to="/" replace />} />
-                <Route path="/signup" element={<Navigate to="/" replace />} />
-                <Route
-                    path="/"
-                    element={
-                        <ProtectedRoute>
-                            <AppShell />
-                        </ProtectedRoute>
-                    }
-                >
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<AppShell />}>
                     <Route index element={<HomePage />} />
                     <Route path="anime" element={<AnimePage />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="rewards" element={<Rewards />} />
-                    <Route path="watch-party" element={<WatchParty />} />
-                    <Route path="creator" element={<CreatorDashboard />} />
+                    <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+                    <Route path="watch-party" element={<ProtectedRoute><WatchParty /></ProtectedRoute>} />
+                    <Route path="creator" element={<ProtectedRoute><CreatorDashboard /></ProtectedRoute>} />
                 </Route>
             </Routes>
         </Router>

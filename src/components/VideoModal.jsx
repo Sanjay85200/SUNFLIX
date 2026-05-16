@@ -3,9 +3,12 @@ import './VideoModal.css';
 import { FaTimes } from 'react-icons/fa';
 import MovieDetail from './MovieDetail';
 import { isTvShow } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabase';
 
 const VideoModal = ({ movie, videoId, title, onClose }) => {
     const [view, setView] = useState('detail');
+    const { user } = useAuth();
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -21,6 +24,24 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
+
+    useEffect(() => {
+        if (view === 'player' && user && user.id !== 'sunflix-demo' && movie) {
+            const recordHistory = async () => {
+                try {
+                    await supabase.from('watch_history').insert({
+                        user_id: user.id,
+                        tmdb_id: movie.id,
+                        media_type: isTvShow(movie) ? 'tv' : 'movie',
+                        title: movie.title || movie.name
+                    });
+                } catch (err) {
+                    console.error("Error recording history", err);
+                }
+            };
+            recordHistory();
+        }
+    }, [view, user, movie]);
 
     if (!movie && !videoId) return null;
 

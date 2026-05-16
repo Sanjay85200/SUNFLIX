@@ -54,6 +54,24 @@ const authApi = {
         };
     },
 
+    loginWithOtp: async (email) => {
+        if (!isSupabaseConfigured || !supabase) {
+            throw new Error(
+                'Supabase is not configured. Copy .env.example to .env and add your keys.'
+            );
+        }
+
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                shouldCreateUser: true, // Auto-signup new users
+            },
+        });
+
+        if (error) throw new Error(error.message);
+        return true;
+    },
+
     signup: async (formData) => {
         if (!isSupabaseConfigured || !supabase) {
             throw new Error(
