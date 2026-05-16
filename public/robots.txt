@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://www.sunflix.site/sitemap.xml
+Sitemap: https://sunflix.site/sitemap.xml
