@@ -50,27 +50,39 @@ export const getCreatorStats = async (creatorId) => {
     }
 };
 
-// Helper to upload a file to Supabase Storage bucket 'creator_content'
+// Helper to upload a file to Cloudinary
 export const uploadCreatorContent = async (creatorId, file, type) => {
-    if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
-    
-    // type is 'video' or 'thumbnail'
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${creatorId}/${Date.now()}_${type}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-        .from('creator_content')
-        .upload(fileName, file);
+    // Cloudinary configuration
+    const cloudName = 'sunflix';
+    const uploadPreset = 'sunflix'; // Must be configured as an "Unsigned" preset in Cloudinary dashboard
 
-    if (uploadError) {
-        throw uploadError;
+    // Determine resource type based on file type
+    const resourceType = type === 'video' ? 'video' : 'image';
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', `sunflix_creators/${creatorId}`);
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Cloudinary Upload Error:", errorData);
+            throw new Error(errorData.error?.message || 'Failed to upload to Cloudinary');
+        }
+
+        const data = await response.json();
+        return data.secure_url;
+    } catch (error) {
+        console.error("Upload exception:", error);
+        throw error;
     }
-
-    const { data } = supabase.storage
-        .from('creator_content')
-        .getPublicUrl(fileName);
-
-    return data.publicUrl;
 };
 
 // Create a new video record in the database
