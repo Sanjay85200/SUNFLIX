@@ -52,9 +52,13 @@ export const getCreatorStats = async (creatorId) => {
 
 // Helper to upload a file to Cloudinary
 export const uploadCreatorContent = async (creatorId, file, type) => {
-    // Cloudinary configuration
-    const cloudName = 'sunflix';
-    const uploadPreset = 'sunflix'; // Must be configured as an "Unsigned" preset in Cloudinary dashboard
+    // Cloudinary configuration from environment variables
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    
+    if (!cloudName || !uploadPreset) {
+        throw new Error('Cloudinary configuration is missing in environment variables');
+    }
 
     // Determine resource type based on file type
     const resourceType = type === 'video' ? 'video' : 'image';
@@ -179,4 +183,77 @@ export const checkIsFollowing = async (creatorId, followerId) => {
         
     if (error) return false;
     return count > 0;
+};
+
+// --- Advanced Upload Feature ---
+
+// XHR-based upload to Cloudinary to support real-time progress and cancellation
+export const uploadWithProgress = (creatorId, file, type, onProgress) => {
+    return new Promise((resolve, reject) => {
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        
+        if (!cloudName || !uploadPreset) {
+            reject(new Error('Cloudinary configuration is missing in environment variables'));
+            return;
+        }
+
+        const resourceType = type === 'video' ? 'video' : 'image';
+        const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        formData.append('folder', `sunflix_creators/${creatorId}`);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+
+        let startTime = Date.now();
+        let lastLoaded = 0;
+
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable && onProgress) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                
+                // Calculate speed
+                const now = Date.now();
+                const timeDiff = (now - startTime) / 1000; // seconds
+                if (timeDiff > 0) {
+                    const bytesSinceLast = event.loaded - lastLoaded;
+                    const speedBps = bytesSinceLast / timeDiff;
+                    const speedMbps = (speedBps / (1024 * 1024)).toFixed(2);
+                    
+                    const remainingBytes = event.total - event.loaded;
+                    const etaSeconds = speedBps > 0 ? (remainingBytes / speedBps) : 0;
+                    
+                    onProgress(percentComplete, speedMbps, etaSeconds);
+                    
+                    startTime = now;
+                    lastLoaded = event.loaded;
+                }
+            }
+        };
+
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response.secure_url);
+                } catch (e) {
+                    reject(new Error('Failed to parse Cloudinary response'));
+                }
+            } else {
+                reject(new Error(`Cloudinary upload failed with status ${xhr.status}: ${xhr.responseText}`));
+            }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.onabort = () => reject(new Error('Upload cancelled'));
+
+        xhr.send(formData);
+
+        // We attach the abort method to the promise so the caller can cancel it
+        resolve.abort = () => xhr.abort();
+    });
 };

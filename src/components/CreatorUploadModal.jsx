@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaCloudUploadAlt, FaVideo, FaImage, FaSpinner } from 'react-icons/fa';
-import { uploadCreatorContent, createVideoRecord } from '../services/creatorApi';
+import { FaTimes, FaCloudUploadAlt, FaVideo, FaImage } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { useUpload } from '../context/UploadContext';
 
 const CreatorUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
     const { user } = useAuth();
+    const { startUpload } = useUpload();
+    
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('Short Film');
     const [videoFile, setVideoFile] = useState(null);
     const [thumbnailFile, setThumbnailFile] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
 
     const categories = ['Short Film', 'Comedy', 'Song', 'Edit', 'Web Series', 'Podcast', 'Vlog', 'Gaming'];
@@ -28,7 +29,7 @@ const CreatorUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         setError('');
 
@@ -42,60 +43,25 @@ const CreatorUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
             return;
         }
 
-        setIsUploading(true);
+        // Dispatch background upload
+        startUpload({
+            title,
+            description,
+            category,
+            videoFile,
+            thumbnailFile
+        });
 
-        try {
-            // Upload files sequentially
-            let videoUrl = '';
-            let thumbnailUrl = '';
-
-            try {
-                videoUrl = await uploadCreatorContent(user.id, videoFile, 'video');
-            } catch (err) {
-                // If storage isn't configured, we fallback to a mock URL for the MVP
-                console.warn("Storage upload failed, falling back to mock. Ensure 'creator_content' bucket exists.", err);
-                videoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
-            }
-
-            if (thumbnailFile) {
-                try {
-                    thumbnailUrl = await uploadCreatorContent(user.id, thumbnailFile, 'thumbnail');
-                } catch (err) {
-                    console.warn("Thumbnail upload failed.", err);
-                    thumbnailUrl = 'https://image.tmdb.org/t/p/w500/hZ8KnS3S7uYySkvfx79v98pS1v.jpg'; // fallback
-                }
-            } else {
-                thumbnailUrl = 'https://image.tmdb.org/t/p/w500/hZ8KnS3S7uYySkvfx79v98pS1v.jpg'; // Default sunflix banner
-            }
-
-            // Create record
-            await createVideoRecord({
-                creator_id: user.id,
-                title,
-                description,
-                category,
-                video_url: videoUrl,
-                thumbnail_url: thumbnailUrl,
-                views: 0,
-                likes: 0,
-                revenue_generated: 0
-            });
-
-            // Reset form
-            setTitle('');
-            setDescription('');
-            setCategory('Short Film');
-            setVideoFile(null);
-            setThumbnailFile(null);
-            
-            onUploadSuccess();
-            onClose();
-        } catch (err) {
-            console.error(err);
-            setError('An error occurred while publishing your content.');
-        } finally {
-            setIsUploading(false);
-        }
+        // Reset form
+        setTitle('');
+        setDescription('');
+        setCategory('Short Film');
+        setVideoFile(null);
+        setThumbnailFile(null);
+        
+        // Notify parent and close modal immediately
+        if (onUploadSuccess) onUploadSuccess();
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -197,23 +163,16 @@ const CreatorUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
                             <button
                                 type="button"
                                 onClick={onClose}
-                                disabled={isUploading}
                                 className="px-6 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5 font-medium transition-all"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                disabled={isUploading || !title || !videoFile}
+                                disabled={!title || !videoFile}
                                 className="px-6 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(34,211,238,0.4)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
-                                {isUploading ? (
-                                    <>
-                                        <FaSpinner className="animate-spin" /> Uploading...
-                                    </>
-                                ) : (
-                                    'Publish Content'
-                                )}
+                                Publish Content
                             </button>
                         </div>
                     </form>

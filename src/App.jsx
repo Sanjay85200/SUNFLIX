@@ -25,6 +25,8 @@ import WatchParty from './pages/WatchParty';
 import CreatorDashboard from './pages/CreatorDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SunflixDataProvider } from './context/SunflixDataContext';
+import { UploadProvider } from './context/UploadContext';
+import GlobalUploadProgress from './components/GlobalUploadProgress';
 import AIAssistant from './components/AIAssistant';
 import SunflixDrop from './components/SunflixDrop';
 import VideoModal from './components/VideoModal';
@@ -257,6 +259,7 @@ function AppContent() {
     return (
         <Router>
             <SEOMeta />
+            <GlobalUploadProgress />
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Navigate to="/login" replace />} />
@@ -277,7 +280,9 @@ function App() {
     return (
         <AuthProvider>
             <SunflixDataProvider>
-                <AppContent />
+                <UploadProvider>
+                    <AppContent />
+                </UploadProvider>
             </SunflixDataProvider>
         </AuthProvider>
     );
