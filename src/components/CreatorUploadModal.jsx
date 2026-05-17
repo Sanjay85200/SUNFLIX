@@ -85,7 +85,7 @@ const CreatorUploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
                             <FaCloudUploadAlt className="text-cyan-400 text-2xl" /> 
                             Upload to Neural Net
                         </h2>
-                        <button onClick={onClose} disabled={isUploading} className="text-white/50 hover:text-white transition-colors">
+                        <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
                             <FaTimes className="text-xl" />
                         </button>
                     </div>
