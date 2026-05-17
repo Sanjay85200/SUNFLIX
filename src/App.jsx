@@ -18,7 +18,6 @@ import Banner from './components/Banner';
 import Row from './components/Row';
 import requests, { languageRequests } from './services/api';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import AnimeUniverse from './pages/AnimeUniverse';
 import Profile from './pages/Profile';
 import Rewards from './pages/Rewards';
