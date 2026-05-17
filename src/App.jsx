@@ -34,6 +34,7 @@ import ParticleBackground from './components/ParticleBackground';
 import CategoryPills from './components/CategoryPills';
 import CommunityFeedStrip from './components/CommunityFeedStrip';
 import SEOMeta from './components/SEOMeta';
+import CreatorVideosRow from './components/CreatorVideosRow';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -78,6 +79,7 @@ function HomePage() {
     return (
         <>
             <Banner onPlayMovie={onMovieSelect} />
+            <CreatorVideosRow onMovieSelect={onMovieSelect} />
             <VortexCarousel title="Sunflix Originals" fetchUrl={requests.fetchNetflixOriginals} onMovieSelect={onMovieSelect} />
             <CommunityFeedStrip />
 

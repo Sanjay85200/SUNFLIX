@@ -12,6 +12,7 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
     const [details, setDetails] = useState(null);
     const [cast, setCast] = useState([]);
     const [similar, setSimilar] = useState([]);
+    const [trailerKey, setTrailerKey] = useState(null);
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
     const [loginMessage, setLoginMessage] = useState('');
     const { user } = useAuth();
@@ -31,14 +32,18 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
         async function fetchMovieData() {
             try {
                 const mediaType = movie.media_type === 'tv' ? 'tv' : 'movie';
-                const [detailsRes, creditsRes, similarRes] = await Promise.all([
+                const [detailsRes, creditsRes, similarRes, videosRes] = await Promise.all([
                     axios.get(`https://api.themoviedb.org/3/${mediaType}/${movie.id}?api_key=${API_KEY}`),
                     axios.get(`https://api.themoviedb.org/3/${mediaType}/${movie.id}/credits?api_key=${API_KEY}`),
-                    axios.get(`https://api.themoviedb.org/3/${mediaType}/${movie.id}/similar?api_key=${API_KEY}`)
+                    axios.get(`https://api.themoviedb.org/3/${mediaType}/${movie.id}/similar?api_key=${API_KEY}`),
+                    axios.get(`https://api.themoviedb.org/3/${mediaType}/${movie.id}/videos?api_key=${API_KEY}`)
                 ]);
                 setDetails(detailsRes.data);
                 setCast(creditsRes.data.cast?.slice(0, 6) || []);
                 setSimilar(similarRes.data.results?.slice(0, 6) || []);
+                
+                const trailer = videosRes.data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                if (trailer) setTrailerKey(trailer.key);
             } catch (error) {
                 console.error("Error fetching movie details:", error);
             }
@@ -68,10 +73,11 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                     </h1>
                     <div className="flex items-center gap-3 flex-wrap">
                         <button
-                            onClick={() => onPlay(movie)}
-                            className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded font-bold hover:bg-white/90 transition-all text-sm"
+                            onClick={() => onPlay(trailerKey)}
+                            disabled={!trailerKey}
+                            className={`flex items-center gap-2 px-6 py-2 rounded font-bold transition-all text-sm ${trailerKey ? 'bg-white text-black hover:bg-white/90' : 'bg-white/20 text-white/50 cursor-not-allowed'}`}
                         >
-                            <FaPlay /> Play
+                            <FaPlay /> {trailerKey ? 'Watch Trailer' : 'No Trailer'}
                         </button>
                         <button 
                             onClick={() => handleProtectedAction('add this to your watchlist')}

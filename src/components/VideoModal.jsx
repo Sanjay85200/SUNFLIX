@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 
 const VideoModal = ({ movie, videoId, title, onClose }) => {
-    const [view, setView] = useState('detail');
+    // If it's a creator video with a direct URL, go straight to player
+    const [view, setView] = useState(movie?.video_url ? 'player' : 'detail');
+    const [activeTrailerKey, setActiveTrailerKey] = useState(null);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -31,8 +33,9 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
                 try {
                     await supabase.from('watch_history').insert({
                         user_id: user.id,
-                        tmdb_id: movie.id,
-                        media_type: isTvShow(movie) ? 'tv' : 'movie',
+                        tmdb_id: movie.video_url ? null : movie.id,
+                        creator_video_id: movie.video_url ? movie.id : null,
+                        media_type: movie.video_url ? 'creator_video' : (isTvShow(movie) ? 'tv' : 'movie'),
                         title: movie.title || movie.name
                     });
                 } catch (err) {
@@ -45,14 +48,42 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
 
     if (!movie && !videoId) return null;
 
-    const isTv = isTvShow(movie);
-    const embedUrl = movie?.id
-        ? isTv
-            ? `https://vidsrc.me/embed/tv?tmdb=${movie.id}`
-            : `https://vidsrc.me/embed/movie?tmdb=${movie.id}`
-        : videoId
-          ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&mute=1`
-          : '';
+    const handlePlayTrailer = (key) => {
+        setActiveTrailerKey(key);
+        setView('player');
+    };
+
+    let playerContent = null;
+    if (movie?.video_url) {
+        playerContent = (
+            <video 
+                src={movie.video_url} 
+                controls 
+                autoPlay 
+                className="w-full h-full object-contain bg-black" 
+            />
+        );
+    } else {
+        const ytId = activeTrailerKey || videoId;
+        if (ytId) {
+            playerContent = (
+                <iframe
+                    className="videoModal__player"
+                    src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
+                    title={title || movie?.title || movie?.name}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                />
+            );
+        } else {
+            playerContent = (
+                <div className="videoModal__player flex items-center justify-center text-white/70 p-8 text-center bg-black/80">
+                    <p className="font-orbitron tracking-widest uppercase">No Official Media Available</p>
+                </div>
+            );
+        }
+    }
 
     return (
         <div className="videoModal" onClick={onClose}>
@@ -62,35 +93,25 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
                 </button>
 
                 {view === 'player' ? (
-                    <div>
-                        <div className="videoModal__playerWrapper">
-                            {embedUrl ? (
-                                <iframe
-                                    className="videoModal__player"
-                                    src={embedUrl}
-                                    title={title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            ) : (
-                                <div className="videoModal__player flex items-center justify-center text-white/70 p-8 text-center">
-                                    No embed URL available for this title.
-                                </div>
-                            )}
+                    <div className="flex flex-col h-full">
+                        <div className="videoModal__playerWrapper flex-1 relative bg-black">
+                            {playerContent}
                         </div>
-                        <div className="p-4 flex justify-center">
-                            <button
-                                type="button"
-                                onClick={() => setView('detail')}
-                                className="text-white/50 hover:text-white transition-colors text-sm font-medium tracking-wider uppercase"
-                            >
-                                ← Back to Details
-                            </button>
-                        </div>
+                        {/* Only show "Back to Details" if it's a TMDB movie */}
+                        {!movie?.video_url && (
+                            <div className="p-4 flex justify-center bg-black/90">
+                                <button
+                                    type="button"
+                                    onClick={() => setView('detail')}
+                                    className="text-white/50 hover:text-white transition-colors text-sm font-medium tracking-wider uppercase"
+                                >
+                                    ← Back to Details
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <MovieDetail movie={movie} onClose={onClose} onPlay={() => setView('player')} />
+                    <MovieDetail movie={movie} onClose={onClose} onPlay={handlePlayTrailer} />
                 )}
             </div>
         </div>

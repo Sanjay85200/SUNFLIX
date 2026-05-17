@@ -70,7 +70,7 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
             className={`relative h-full w-full cursor-pointer rounded-xl overflow-hidden group ring-1 ring-white/5 ${neonRing}`}
         >
             <img
-                src={`${imageBaseUrl}${posterPath}`}
+                src={posterPath.startsWith('http') ? posterPath : `${imageBaseUrl}${posterPath}`}
                 alt={movie.title || movie.name}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
