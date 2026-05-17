@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import './VideoModal.css';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaHeart, FaComment, FaUserPlus, FaUserCheck } from 'react-icons/fa';
 import MovieDetail from './MovieDetail';
 import { isTvShow } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import { likeCreatorVideo, checkIsFollowing, followCreator } from '../services/creatorApi';
+import VideoComments from './VideoComments';
+import LoginPromptModal from './LoginPromptModal';
 
 const VideoModal = ({ movie, videoId, title, onClose }) => {
-    // If it's a creator video with a direct URL, go straight to player
     const [view, setView] = useState(movie?.video_url ? 'player' : 'detail');
     const [activeTrailerKey, setActiveTrailerKey] = useState(null);
+    const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+    const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+    const [loginMessage, setLoginMessage] = useState('');
+    const [likes, setLikes] = useState(movie?.likes || 0);
+    const [hasLiked, setHasLiked] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -46,6 +54,45 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
         }
     }, [view, user, movie]);
 
+    useEffect(() => {
+        if (movie?.video_url && user && user.id !== 'sunflix-demo') {
+            checkIsFollowing(movie.creator_id, user.id).then(setIsFollowing);
+        }
+    }, [movie, user]);
+
+    const handleProtectedAction = (actionName, actionFn) => {
+        if (!user || user.id === 'sunflix-demo') {
+            setLoginMessage(`You must sign in to ${actionName}.`);
+            setIsLoginPromptOpen(true);
+            return;
+        }
+        actionFn();
+    };
+
+    const handleLike = (e) => {
+        e.stopPropagation();
+        handleProtectedAction('like this video', async () => {
+            if (hasLiked) return;
+            setLikes(prev => prev + 1);
+            setHasLiked(true);
+            await likeCreatorVideo(movie.id);
+        });
+    };
+
+    const handleFollow = (e) => {
+        e.stopPropagation();
+        handleProtectedAction('follow creators', async () => {
+            if (isFollowing) return;
+            setIsFollowing(true);
+            try {
+                await followCreator(movie.creator_id, user.id);
+            } catch (err) {
+                console.error("Follow error", err);
+                setIsFollowing(false);
+            }
+        });
+    };
+
     if (!movie && !videoId) return null;
 
     const handlePlayTrailer = (key) => {
@@ -56,12 +103,56 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
     let playerContent = null;
     if (movie?.video_url) {
         playerContent = (
-            <video 
-                src={movie.video_url} 
-                controls 
-                autoPlay 
-                className="w-full h-full object-contain bg-black" 
-            />
+            <div className="relative w-full h-full bg-black group overflow-hidden">
+                <video 
+                    src={movie.video_url} 
+                    controls 
+                    autoPlay 
+                    className="w-full h-full object-contain" 
+                />
+                
+                {/* Social Overlay */}
+                <div className="absolute right-4 bottom-24 flex flex-col gap-6 z-30 pointer-events-none group-hover:opacity-100 opacity-0 md:opacity-100 transition-opacity">
+                    <button onClick={handleLike} className="pointer-events-auto flex flex-col items-center gap-1 group/btn">
+                        <div className={`p-3 rounded-full bg-black/40 backdrop-blur-md border ${hasLiked ? 'border-red-500/50 text-red-500' : 'border-white/20 text-white'} transition-all hover:scale-110`}>
+                            <FaHeart className="text-xl" />
+                        </div>
+                        <span className="text-white text-xs font-bold drop-shadow-md">{likes}</span>
+                    </button>
+                    
+                    <button onClick={(e) => { e.stopPropagation(); setIsCommentsOpen(true); }} className="pointer-events-auto flex flex-col items-center gap-1 group/btn">
+                        <div className="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white transition-all hover:scale-110 hover:border-cyan-400">
+                            <FaComment className="text-xl" />
+                        </div>
+                        <span className="text-white text-xs font-bold drop-shadow-md">Reply</span>
+                    </button>
+                </div>
+                
+                {/* Info Overlay */}
+                <div className="absolute left-4 bottom-20 z-30 pointer-events-none max-w-[70%] group-hover:opacity-100 opacity-0 md:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-white font-bold text-lg drop-shadow-md">@{movie.creator_name || 'Creator'}</h3>
+                        <button 
+                            onClick={handleFollow} 
+                            disabled={isFollowing}
+                            className={`pointer-events-auto px-3 py-1 text-xs font-bold rounded-full border transition-all ${isFollowing ? 'border-white/30 text-white/50 bg-black/30' : 'border-cyan-500 text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/30'}`}
+                        >
+                            {isFollowing ? <><FaUserCheck className="inline mr-1" /> Following</> : <><FaUserPlus className="inline mr-1" /> Follow</>}
+                        </button>
+                    </div>
+                    <p className="text-white/80 text-sm drop-shadow-md line-clamp-2">{movie.description}</p>
+                </div>
+                
+                <VideoComments 
+                    videoId={movie.id} 
+                    isOpen={isCommentsOpen} 
+                    onClose={() => setIsCommentsOpen(false)}
+                    onLoginPrompt={(msg) => {
+                        setLoginMessage(`You must sign in to ${msg}.`);
+                        setIsLoginPromptOpen(true);
+                    }}
+                />
+            </div>
         );
     } else {
         const ytId = activeTrailerKey || videoId;
@@ -114,6 +205,12 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
                     <MovieDetail movie={movie} onClose={onClose} onPlay={handlePlayTrailer} />
                 )}
             </div>
+            
+            <LoginPromptModal 
+                isOpen={isLoginPromptOpen} 
+                onClose={() => setIsLoginPromptOpen(false)} 
+                message={loginMessage} 
+            />
         </div>
     );
 };

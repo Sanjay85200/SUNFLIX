@@ -30,7 +30,7 @@ const Login = () => {
 
             await authApi.loginWithOtp(email);
             setIsOtpSent(true);
-            setSuccessMessage('A 6-digit code has been sent to your email.');
+            setSuccessMessage('Your verification code has been sent to your email.');
         } catch (err) {
             setError(err.message || 'Failed to send code');
         } finally {
@@ -95,10 +95,10 @@ const Login = () => {
                             <form onSubmit={handleVerifyOtp}>
                                 <input
                                     type="text"
-                                    placeholder="Enter 6-Digit Code"
+                                    placeholder="Enter Verification Code"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    maxLength={6}
+                                    maxLength={8}
                                     required
                                     className="text-center tracking-[0.5em] font-bold text-lg"
                                 />

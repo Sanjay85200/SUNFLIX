@@ -95,3 +95,76 @@ export const deleteVideoRecord = async (videoId) => {
         
     if (error) throw error;
 };
+
+// --- Social Engagement Features ---
+
+export const likeCreatorVideo = async (videoId) => {
+    if (!isSupabaseConfigured || !supabase) return;
+    
+    // Simple rpc or fetch and increment. For safety without rpc, we fetch first.
+    const { data: video, error: fetchError } = await supabase
+        .from('creator_videos')
+        .select('likes')
+        .eq('id', videoId)
+        .single();
+        
+    if (fetchError || !video) return;
+    
+    await supabase
+        .from('creator_videos')
+        .update({ likes: (video.likes || 0) + 1 })
+        .eq('id', videoId);
+};
+
+export const getComments = async (videoId) => {
+    if (!isSupabaseConfigured || !supabase) return [];
+    
+    const { data, error } = await supabase
+        .from('video_comments')
+        .select('*')
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: true });
+        
+    if (error) {
+        console.error("Error fetching comments:", error);
+        return [];
+    }
+    return data;
+};
+
+export const addComment = async (videoId, userId, content, authorName = 'Anonymous') => {
+    if (!isSupabaseConfigured || !supabase) throw new Error("Supabase not configured");
+    
+    const { data, error } = await supabase
+        .from('video_comments')
+        .insert([{ video_id: videoId, user_id: userId, content, author_name: authorName }])
+        .select()
+        .single();
+        
+    if (error) throw error;
+    return data;
+};
+
+export const followCreator = async (creatorId, followerId) => {
+    if (!isSupabaseConfigured || !supabase) throw new Error("Supabase not configured");
+    
+    const { error } = await supabase
+        .from('creator_followers')
+        .insert([{ creator_id: creatorId, follower_id: followerId }]);
+        
+    // Ignore duplicate key errors if they already follow
+    if (error && error.code !== '23505') throw error;
+};
+
+export const checkIsFollowing = async (creatorId, followerId) => {
+    if (!isSupabaseConfigured || !supabase) return false;
+    
+    const { count, error } = await supabase
+        .from('creator_followers')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', creatorId)
+        .eq('follower_id', followerId);
+        
+    if (error) return false;
+    return count > 0;
+};
