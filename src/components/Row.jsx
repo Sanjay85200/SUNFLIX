@@ -8,26 +8,48 @@ import 'swiper/css/free-mode';
 import './Row.css';
 import FloatingMovieCard from './FloatingMovieCard';
 import { motion } from 'framer-motion';
-import { enrichMovieForModal } from '../services/api';
+import { enrichMovieForModal, fetchCollection } from '../services/api';
+import { omdbToSunflixFormat } from '../services/omdbAdapter';
 
 const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, accent = 'red' }) => {
     const [movies, setMovies] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
+
         if (moviesData) {
             setMovies(moviesData);
+            setLoading(false);
             return;
         }
 
         async function fetchData() {
+            setLoading(true);
             try {
-                const request = await axios.get(fetchUrl);
-                setMovies(request.data.results || []);
+                if (Array.isArray(fetchUrl)) {
+                    const data = await fetchCollection(fetchUrl);
+                    if (isMounted) setMovies(data);
+                } else if (typeof fetchUrl === 'string' && fetchUrl.startsWith('http')) {
+                    const request = await axios.get(fetchUrl);
+                    const list = (request.data.results || request.data.Search || []).map(omdbToSunflixFormat);
+                    if (isMounted) setMovies(list);
+                } else if (fetchUrl) {
+                    const data = await fetchCollection(fetchUrl);
+                    if (isMounted) setMovies(data);
+                }
             } catch (error) {
-                console.error("Error fetching from TMDB:", error);
+                console.error("Error fetching movie collection:", error);
+            } finally {
+                if (isMounted) setLoading(false);
             }
         }
+
         fetchUrl && fetchData();
+
+        return () => {
+            isMounted = false;
+        };
     }, [fetchUrl, moviesData]);
 
     const handleClick = async (movie) => {
@@ -56,44 +78,57 @@ const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, a
             </h2>
 
             <div className="row__container overflow-visible">
-                <Swiper
-                    modules={[Navigation, FreeMode]}
-                    grabCursor={true}
-                    freeMode={{ enabled: true, sticky: false }}
-                    slidesPerView={'auto'}
-                    spaceBetween={isLargeRow ? 16 : 12}
-                    navigation={true}
-                    className="swiper-container !overflow-visible !py-4"
-                    breakpoints={{
-                        320: { slidesPerView: isLargeRow ? 2 : 3, spaceBetween: 8 },
-                        480: { slidesPerView: isLargeRow ? 3 : 4, spaceBetween: 10 },
-                        768: { slidesPerView: isLargeRow ? 4 : 5, spaceBetween: 12 },
-                        1024: { slidesPerView: isLargeRow ? 5 : 6, spaceBetween: 14 },
-                        1440: { slidesPerView: isLargeRow ? 6 : 7, spaceBetween: 16 }
-                    }}
-                >
-                    {movies.map((movie) => (
-                        <SwiperSlide
-                            key={movie.id}
-                            className="!h-auto"
-                            style={{ perspective: "1200px" }}
-                        >
-                            <div className={isLargeRow ? "h-[300px] sm:h-[360px]" : "h-[160px] sm:h-[180px]"}>
-                                <FloatingMovieCard
-                                    movie={movie}
-                                    isLargeRow={isLargeRow}
-                                    onClick={handleClick}
-                                    accent={accent}
-                                />
-                            </div>
-                            <div className="mt-2 px-1">
-                                <h3 className="text-white/90 font-medium text-sm truncate w-full">
-                                    {movie.title || movie.name}
-                                </h3>
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
+                {loading ? (
+                    <div className="flex gap-4 overflow-hidden py-4">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div
+                                key={i}
+                                className={`animate-pulse bg-white/10 rounded-xl flex-shrink-0 ${
+                                    isLargeRow ? 'w-44 h-72' : 'w-40 h-44'
+                                }`}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <Swiper
+                        modules={[Navigation, FreeMode]}
+                        grabCursor={true}
+                        freeMode={{ enabled: true, sticky: false }}
+                        slidesPerView={'auto'}
+                        spaceBetween={isLargeRow ? 16 : 12}
+                        navigation={true}
+                        className="swiper-container !overflow-visible !py-4"
+                        breakpoints={{
+                            320: { slidesPerView: isLargeRow ? 2 : 3, spaceBetween: 8 },
+                            480: { slidesPerView: isLargeRow ? 3 : 4, spaceBetween: 10 },
+                            768: { slidesPerView: isLargeRow ? 4 : 5, spaceBetween: 12 },
+                            1024: { slidesPerView: isLargeRow ? 5 : 6, spaceBetween: 14 },
+                            1440: { slidesPerView: isLargeRow ? 6 : 7, spaceBetween: 16 }
+                        }}
+                    >
+                        {movies.map((movie) => (
+                            <SwiperSlide
+                                key={movie.imdbID || movie.id}
+                                className="!h-auto"
+                                style={{ perspective: "1200px" }}
+                            >
+                                <div className={isLargeRow ? "h-[300px] sm:h-[360px]" : "h-[160px] sm:h-[180px]"}>
+                                    <FloatingMovieCard
+                                        movie={movie}
+                                        isLargeRow={isLargeRow}
+                                        onClick={handleClick}
+                                        accent={accent}
+                                    />
+                                </div>
+                                <div className="mt-2 px-1">
+                                    <h3 className="text-white/90 font-medium text-sm truncate w-full">
+                                        {movie.title || movie.name}
+                                    </h3>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                )}
             </div>
         </motion.div>
     );

@@ -1,14 +1,15 @@
 import React, { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { FaPlay, FaStar, FaBookmark, FaRegBookmark } from 'react-icons/fa';
-import { imageBaseUrl, isTvShow } from '../services/api';
+import { isTvShow } from '../services/api';
+import { FALLBACK_POSTER } from '../services/omdbAdapter';
 import { useSunflixData } from '../context/SunflixDataContext';
 
 const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
     const ref = useRef(null);
     const { addToWatchlist, inWatchlist } = useSunflixData();
     const mediaType = isTvShow(movie) ? 'tv' : 'movie';
-    const saved = inWatchlist(movie.id, mediaType);
+    const saved = inWatchlist(movie.id || movie.imdbID, mediaType);
 
     const x = useMotionValue(0);
     const y = useMotionValue(0);
@@ -33,11 +34,11 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
         y.set(0);
     };
 
-    const posterPath = isLargeRow ? movie.poster_path : movie.backdrop_path || movie.poster_path;
-    if (!posterPath) return null;
+    const posterPath = movie?.poster_path || movie?.backdrop_path || movie?.Poster;
+    const finalPoster = (posterPath && posterPath !== 'N/A') ? posterPath : FALLBACK_POSTER;
 
-    const rating = movie.vote_average?.toFixed(1);
-    const year = movie.release_date?.split('-')[0] || movie.first_air_date?.split('-')[0];
+    const rating = movie?.imdbRating !== 'N/A' && movie?.imdbRating ? movie.imdbRating : (movie?.vote_average?.toFixed(1) || 'N/A');
+    const year = movie?.release_date?.split('-')[0] || movie?.Year || movie?.first_air_date?.split('-')[0];
 
     const neonRing =
         accent === 'neon'
@@ -64,27 +65,33 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
             }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            onClick={() => onClick(movie)}
+            onClick={() => onClick && onClick(movie)}
             whileHover={{ scale: 1.06, z: 40 }}
             transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-            className={`relative h-full w-full cursor-pointer rounded-xl overflow-hidden group ring-1 ring-white/5 ${neonRing}`}
+            className={`relative h-full w-full cursor-pointer rounded-xl overflow-hidden group ring-1 ring-white/5 bg-gray-900 ${neonRing}`}
         >
             <img
-                src={posterPath.startsWith('http') ? posterPath : `${imageBaseUrl}${posterPath}`}
+                src={finalPoster}
                 alt={movie.title || movie.name}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
+                onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = FALLBACK_POSTER;
+                }}
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
-            <div
-                style={{ transform: 'translateZ(40px)' }}
-                className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300"
-            >
-                <FaStar className="text-yellow-400 text-xs" />
-                <span className="text-white text-xs font-bold">{rating}</span>
-            </div>
+            {rating && rating !== 'N/A' && (
+                <div
+                    style={{ transform: 'translateZ(40px)' }}
+                    className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                >
+                    <FaStar className="text-yellow-400 text-xs" />
+                    <span className="text-white text-xs font-bold">{rating}</span>
+                </div>
+            )}
 
             <div
                 style={{ transform: 'translateZ(50px)' }}
@@ -115,6 +122,9 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
                 </h3>
                 <div className="flex items-center gap-2 text-xs">
                     {year && <span className="text-white/60">{year}</span>}
+                    {movie.type && (
+                        <span className="text-white/40 uppercase text-[10px] tracking-wider">{movie.type}</span>
+                    )}
                     <span
                         className={
                             accent === 'neon'

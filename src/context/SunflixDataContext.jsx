@@ -151,7 +151,7 @@ export function SunflixDataProvider({ children }) {
 
     const inWatchlist = useCallback(
         (tmdbId, mediaType) =>
-            watchlist.some((w) => w.tmdb_id === tmdbId && w.media_type === mediaType),
+            watchlist.some((w) => (w.tmdb_id === tmdbId || w.imdb_id === tmdbId) && w.media_type === mediaType),
         [watchlist]
     );
 
@@ -177,13 +177,15 @@ export function SunflixDataProvider({ children }) {
         async (movie) => {
             if (!user) return;
             const mediaType = isTvShow(movie) ? 'tv' : 'movie';
-            if (inWatchlist(movie.id, mediaType)) return;
+            const id = movie.imdbID || movie.id;
+            if (inWatchlist(id, mediaType)) return;
 
             const row = {
-                tmdb_id: movie.id,
+                tmdb_id: id,
+                imdb_id: id,
                 media_type: mediaType,
                 title: movie.title || movie.name,
-                poster_path: movie.poster_path || null,
+                poster_path: movie.poster_path || movie.Poster || null,
             };
 
             if (isDemo || !supabase) {

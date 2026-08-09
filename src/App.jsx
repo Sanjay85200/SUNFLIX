@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 /**
- * Sunflix — Vite + React shell: cyberpunk UI, TMDB rails, Supabase-ready data.
+ * Sunflix — Vite + React shell: cyberpunk UI, OMDb rails, Supabase-ready data.
  */
-import axios from 'axios';
 import {
     BrowserRouter as Router,
     Routes,
@@ -17,6 +16,7 @@ import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import Row from './components/Row';
 import requests, { languageRequests } from './services/api';
+import allCollections from './config/movieCollections';
 import Login from './pages/Login';
 import AnimeUniverse from './pages/AnimeUniverse';
 import Profile from './pages/Profile';
@@ -36,6 +36,7 @@ import CategoryPills from './components/CategoryPills';
 import CommunityFeedStrip from './components/CommunityFeedStrip';
 import SEOMeta from './components/SEOMeta';
 import CreatorVideosRow from './components/CreatorVideosRow';
+import SearchResults from './components/SearchResults';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -56,20 +57,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const categories = [
-    { id: 28, name: 'Action', fetchUrl: requests.fetchActionMovies },
-    { id: 35, name: 'Comedy', fetchUrl: requests.fetchComedyMovies },
-    { id: 27, name: 'Horror', fetchUrl: requests.fetchHorrorMovies },
-    { id: 10749, name: 'Romance', fetchUrl: requests.fetchRomanceMovies },
+    { id: 'action', name: 'Action', fetchUrl: allCollections.actionMovies },
+    { id: 'comedy', name: 'Comedy', fetchUrl: allCollections.comedyMovies },
+    { id: 'horror', name: 'Horror', fetchUrl: allCollections.horrorMovies },
+    { id: 'romance', name: 'Romance', fetchUrl: allCollections.romanceMovies },
+    { id: 'scifi', name: 'Sci-Fi', fetchUrl: allCollections.sciFiMovies },
+    { id: 'animation', name: 'Animation', fetchUrl: allCollections.animationMovies },
 ];
 
 const languages = [
-    { id: 'en', name: 'English', fetchUrl: languageRequests.fetchEnglish },
-    { id: 'hi', name: 'Hindi', fetchUrl: languageRequests.fetchHindi },
-    { id: 'te', name: 'Telugu', fetchUrl: languageRequests.fetchTelugu },
-    { id: 'ta', name: 'Tamil', fetchUrl: languageRequests.fetchTamil },
-    { id: 'ja', name: 'Japanese', fetchUrl: languageRequests.fetchJapanese },
-    { id: 'ko', name: 'Korean', fetchUrl: languageRequests.fetchKorean },
-    { id: 'es', name: 'Spanish', fetchUrl: languageRequests.fetchSpanish },
+    { id: 'en', name: 'English', fetchUrl: allCollections.englishMovies },
+    { id: 'hi', name: 'Hindi', fetchUrl: allCollections.hindiMovies },
+    { id: 'te', name: 'Telugu', fetchUrl: allCollections.teluguMovies },
+    { id: 'ta', name: 'Tamil', fetchUrl: allCollections.tamilMovies },
 ];
 
 function HomePage() {
@@ -81,22 +81,23 @@ function HomePage() {
         <>
             <Banner onPlayMovie={onMovieSelect} />
             <CreatorVideosRow onMovieSelect={onMovieSelect} />
-            <VortexCarousel title="Sunflix Originals" fetchUrl={requests.fetchNetflixOriginals} onMovieSelect={onMovieSelect} />
+            <VortexCarousel title="Popular TV Series" fetchUrl={allCollections.popularTvShows} onMovieSelect={onMovieSelect} />
             <CommunityFeedStrip />
 
-            <Row title="Trending Now" fetchUrl={requests.fetchTrending} onMovieSelect={onMovieSelect} accent="neon" />
-            <Row title="SUN AI Curated Picks" fetchUrl={requests.fetchAIPicks} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
-            <Row title="Anime Universe" fetchUrl={requests.fetchAnimeUniverse} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
-            <Row title="Telugu Spotlight" fetchUrl={requests.fetchTelugu} onMovieSelect={onMovieSelect} accent="neon" />
-            <Row title="Sci‑Fi Frontier" fetchUrl={requests.fetchSciFi} onMovieSelect={onMovieSelect} accent="neon" />
-            <Row title="Horror After Dark" fetchUrl={requests.fetchHorrorMovies} onMovieSelect={onMovieSelect} />
-            <Row title="Gaming & Adaptations" fetchUrl={requests.fetchGamingContent} onMovieSelect={onMovieSelect} accent="neon" />
-            <Row title="Thriller Pulse" fetchUrl={requests.fetchThriller} onMovieSelect={onMovieSelect} />
+            <Row title="Trending Movies" fetchUrl={allCollections.trendingMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="IMDb Top Rated" fetchUrl={allCollections.topRatedMovies} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
+            <Row title="Action Blockbusters" fetchUrl={allCollections.actionMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Telugu Cinema Spotlight" fetchUrl={allCollections.teluguMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Sci-Fi Frontier" fetchUrl={allCollections.sciFiMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Hindi Hits" fetchUrl={allCollections.hindiMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Horror After Dark" fetchUrl={allCollections.horrorMovies} onMovieSelect={onMovieSelect} />
+            <Row title="Tamil Cinema" fetchUrl={allCollections.tamilMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Animation Hits" fetchUrl={allCollections.animationMovies} onMovieSelect={onMovieSelect} />
 
             <CategoryPills categories={categories} activeCategory={activeCategory.id} onCategoryChange={setActiveCategory} title="Categories" highlight="Explore" />
             <Row
                 key={`cat-${activeCategory.id}`}
-                title={`${activeCategory.name} Highlights`}
+                title={`${activeCategory.name} Selection`}
                 fetchUrl={activeCategory.fetchUrl}
                 onMovieSelect={onMovieSelect}
                 isLargeRow
@@ -110,12 +111,6 @@ function HomePage() {
                 onMovieSelect={onMovieSelect}
                 accent="neon"
             />
-
-            <Row title="Top Rated" fetchUrl={requests.fetchTopRated} onMovieSelect={onMovieSelect} />
-            <Row title="Action Movies" fetchUrl={requests.fetchActionMovies} onMovieSelect={onMovieSelect} />
-            <Row title="Comedy Movies" fetchUrl={requests.fetchComedyMovies} onMovieSelect={onMovieSelect} />
-            <Row title="Romance Movies" fetchUrl={requests.fetchRomanceMovies} onMovieSelect={onMovieSelect} />
-            <Row title="Documentaries" fetchUrl={requests.fetchDocumentaries} onMovieSelect={onMovieSelect} />
         </>
     );
 }
@@ -125,36 +120,13 @@ function AnimePage() {
     return <AnimeUniverse onMovieSelect={onMovieSelect} />;
 }
 
-function SearchResultsView({ searchTitle, isLoadingSearch, searchResults, onMovieSelect }) {
-    return (
-        <div className="search-results">
-            <div className="search-results__header">
-                <p>
-                    Showing results for: <span>&quot;{searchTitle}&quot;</span>
-                </p>
-            </div>
-            {isLoadingSearch ? (
-                <div className="no-results">Searching...</div>
-            ) : searchResults.length > 0 ? (
-                <Row title="Search Results" moviesData={searchResults} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
-            ) : (
-                <div className="no-results">
-                    No movies found for &quot;{searchTitle}&quot;. Try another search.
-                </div>
-            )}
-        </div>
-    );
-}
-
 function AppShell() {
     const { justLoggedIn, setJustLoggedIn } = useAuth();
     const location = useLocation();
     const [showSplash, setShowSplash] = useState(false);
     const [selectedMovie, setSelectedMovie] = useState(null);
-    const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [searchTitle, setSearchTitle] = useState('');
-    const [isLoadingSearch, setIsLoadingSearch] = useState(false);
     const [isAIOpen, setIsAIOpen] = useState(false);
 
     useEffect(() => {
@@ -181,30 +153,18 @@ function AppShell() {
         setJustLoggedIn(false);
     };
 
-    const handleSearch = async (query) => {
+    const handleSearch = (query) => {
         if (!query || query.trim() === '') {
             setIsSearching(false);
-            setSearchResults([]);
             setSearchTitle('');
             return;
         }
         setIsSearching(true);
-        setIsLoadingSearch(true);
-        setSearchTitle(query);
-        try {
-            const response = await axios.get(requests.fetchSearch(query));
-            setSearchResults(response.data.results || []);
-        } catch (error) {
-            console.error('Search error:', error);
-            setSearchResults([]);
-        } finally {
-            setIsLoadingSearch(false);
-        }
+        setSearchTitle(query.trim());
     };
 
     const clearSearch = () => {
         setIsSearching(false);
-        setSearchResults([]);
         setSearchTitle('');
     };
 
@@ -227,10 +187,8 @@ function AppShell() {
                 />
 
                 {isSearching ? (
-                    <SearchResultsView
-                        searchTitle={searchTitle}
-                        isLoadingSearch={isLoadingSearch}
-                        searchResults={searchResults}
+                    <SearchResults
+                        query={searchTitle}
                         onMovieSelect={setSelectedMovie}
                     />
                 ) : (
@@ -238,7 +196,7 @@ function AppShell() {
                 )}
 
                 <footer className="footer">
-                    <p>&copy; 2026 Sunflix. Neural streaming universe.</p>
+                    <p>&copy; 2026 Sunflix. Neural streaming universe powered by OMDb.</p>
                 </footer>
 
                 {selectedMovie && (
