@@ -156,8 +156,9 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
         // Full movie/TV show embed via vidsrc
         const mediaType = isTvShow(movie) ? 'tv' : 'movie';
         const tmdbId = movie?.id;
+        const streamApiKey = import.meta.env.VITE_STREAM_API_KEY;
         if (tmdbId) {
-            const embedUrl = `https://vidsrc.xyz/embed/${mediaType}/${tmdbId}`;
+            const embedUrl = `https://vidsrc.xyz/embed/${mediaType}/${tmdbId}${streamApiKey ? `?api_key=${streamApiKey}` : ''}`;
             playerContent = (
                 <iframe
                     className="videoModal__player"
