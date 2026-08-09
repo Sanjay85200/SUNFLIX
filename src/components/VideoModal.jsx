@@ -11,7 +11,6 @@ import LoginPromptModal from './LoginPromptModal';
 
 const VideoModal = ({ movie, videoId, title, onClose }) => {
     const [view, setView] = useState(movie?.video_url ? 'player' : 'detail');
-    const [activeTrailerKey, setActiveTrailerKey] = useState(null);
     const [isCommentsOpen, setIsCommentsOpen] = useState(false);
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
     const [loginMessage, setLoginMessage] = useState('');
@@ -95,8 +94,7 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
 
     if (!movie && !videoId) return null;
 
-    const handlePlayTrailer = (key) => {
-        setActiveTrailerKey(key);
+    const handlePlayMovie = (movieId) => {
         setView('player');
     };
 
@@ -155,22 +153,27 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
             </div>
         );
     } else {
-        const ytId = activeTrailerKey || videoId;
-        if (ytId) {
+        // Full movie/TV show embed via vidsrc
+        const mediaType = isTvShow(movie) ? 'tv' : 'movie';
+        const tmdbId = movie?.id;
+        if (tmdbId) {
+            const embedUrl = `https://vidsrc.xyz/embed/${mediaType}/${tmdbId}`;
             playerContent = (
                 <iframe
                     className="videoModal__player"
-                    src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
+                    src={embedUrl}
                     title={title || movie?.title || movie?.name}
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     allowFullScreen
+                    referrerPolicy="origin"
+                    style={{ width: '100%', height: '100%' }}
                 />
             );
         } else {
             playerContent = (
                 <div className="videoModal__player flex items-center justify-center text-white/70 p-8 text-center bg-black/80">
-                    <p className="font-orbitron tracking-widest uppercase">No Official Media Available</p>
+                    <p className="font-orbitron tracking-widest uppercase">No Media Available</p>
                 </div>
             );
         }
@@ -202,7 +205,7 @@ const VideoModal = ({ movie, videoId, title, onClose }) => {
                         )}
                     </div>
                 ) : (
-                    <MovieDetail movie={movie} onClose={onClose} onPlay={handlePlayTrailer} />
+                    <MovieDetail movie={movie} onClose={onClose} onPlay={handlePlayMovie} />
                 )}
             </div>
             

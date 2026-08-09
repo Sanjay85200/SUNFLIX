@@ -73,11 +73,10 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                     </h1>
                     <div className="flex items-center gap-3 flex-wrap">
                         <button
-                            onClick={() => onPlay(trailerKey)}
-                            disabled={!trailerKey}
-                            className={`flex items-center gap-2 px-6 py-2 rounded font-bold transition-all text-sm ${trailerKey ? 'bg-white text-black hover:bg-white/90' : 'bg-white/20 text-white/50 cursor-not-allowed'}`}
+                            onClick={() => onPlay(movie.id)}
+                            className="flex items-center gap-2 px-6 py-2 rounded font-bold transition-all text-sm bg-white text-black hover:bg-white/90"
                         >
-                            <FaPlay /> {trailerKey ? 'Watch Trailer' : 'No Trailer'}
+                            <FaPlay /> Play Movie
                         </button>
                         <button 
                             onClick={() => handleProtectedAction('add this to your watchlist')}
