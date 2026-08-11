@@ -1,15 +1,37 @@
 /**
  * Official YouTube Data API v3 Service for SUNFLIX
- * Handles authorized video searching, duration retrieval, and YouTube embed format mapping.
+ * Handles authorized video searching, duration retrieval, error handling, and YouTube embed format mapping.
+ * Accesses API key securely via import.meta.env.VITE_YOUTUBE_API_KEY.
  */
 
-const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY?.trim();
 const YOUTUBE_SEARCH_BASE = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_VIDEOS_BASE = 'https://www.googleapis.com/youtube/v3/videos';
 
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 const FETCH_TIMEOUT_MS = 4000; // 4s timeout
 const memoryCache = new Map();
+
+function getApiKey() {
+    return import.meta.env.VITE_YOUTUBE_API_KEY?.trim() || '';
+}
+
+function isApiKeyValid() {
+    const key = getApiKey();
+    return Boolean(
+        key &&
+        key !== 'YOUR_YOUTUBE_API_KEY_HERE' &&
+        key !== 'PASTE_MY_NEW_YOUTUBE_API_KEY_HERE' &&
+        key.length > 10
+    );
+}
+
+/**
+ * Mask API key for safe logging (e.g. AIza...AlEU)
+ */
+function maskApiKey(key) {
+    if (!key || key.length < 8) return '****';
+    return `${key.slice(0, 4)}...${key.slice(-4)}`;
+}
 
 function getFromCache(key) {
     try {
@@ -38,7 +60,6 @@ function saveToCache(key, data) {
 /**
  * Format ISO 8601 duration string (PT1H30M15S -> 1h 30m)
  */
-
 function parseIsoDuration(durationStr) {
     if (!durationStr) return '';
     const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -86,16 +107,20 @@ export function youtubeToSunflixFormat(item, duration = '') {
 }
 
 export const youtubeApi = {
-    isConfigured: Boolean(YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'YOUR_YOUTUBE_API_KEY_HERE'),
+    get isConfigured() {
+        return isApiKeyValid();
+    },
 
     /**
      * Search official YouTube embeddable & syndicated videos
      */
     search: async (query, pageToken = '') => {
-        if (!query || !query.trim()) return { results: [], totalResults: 0, nextPageToken: null };
-        if (!youtubeApi.isConfigured) {
+        if (!query || !query.trim()) return { results: [], totalResults: 0, nextPageToken: null, error: null };
+        
+        const apiKey = getApiKey();
+        if (!isApiKeyValid()) {
             console.warn('[YouTube API] VITE_YOUTUBE_API_KEY is not configured or using default placeholder.');
-            return { results: [], totalResults: 0, nextPageToken: null };
+            return { results: [], totalResults: 0, nextPageToken: null, error: 'API Key not configured' };
         }
 
         const cacheKey = `search_${query}_${pageToken}`;
@@ -109,7 +134,7 @@ export const youtubeApi = {
 
         try {
             const params = new URLSearchParams({
-                key: YOUTUBE_API_KEY,
+                key: apiKey,
                 part: 'snippet',
                 type: 'video',
                 q: query.trim(),
@@ -125,8 +150,23 @@ export const youtubeApi = {
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
-                console.warn(`[YouTube API] HTTP ${res.status}:`, errData.error?.message || res.statusText);
-                return { results: [], totalResults: 0, nextPageToken: null };
+                const reason = errData.error?.errors?.[0]?.reason || errData.error?.message || res.statusText;
+                
+                let userFriendlyError = 'YouTube search error';
+                if (res.status === 403) {
+                    if (reason.includes('quota')) {
+                        userFriendlyError = 'YouTube API daily quota exceeded.';
+                    } else if (reason.includes('key') || reason.includes('API key')) {
+                        userFriendlyError = 'Invalid YouTube API key.';
+                    } else {
+                        userFriendlyError = 'YouTube API access forbidden or restricted.';
+                    }
+                } else if (res.status === 400) {
+                    userFriendlyError = 'Invalid YouTube request format.';
+                }
+
+                console.warn(`[YouTube API] HTTP ${res.status} (${maskApiKey(apiKey)}): ${userFriendlyError}`);
+                return { results: [], totalResults: 0, nextPageToken: null, error: userFriendlyError };
             }
 
             const data = await res.json();
@@ -145,7 +185,8 @@ export const youtubeApi = {
             const result = {
                 results: formatted,
                 totalResults: data.pageInfo?.totalResults || formatted.length,
-                nextPageToken: data.nextPageToken || null
+                nextPageToken: data.nextPageToken || null,
+                error: null
             };
 
             memoryCache.set(cacheKey, result);
@@ -153,8 +194,9 @@ export const youtubeApi = {
             return result;
         } catch (err) {
             clearTimeout(timeoutId);
-            console.warn('[YouTube API] Fetch error:', err?.message || err);
-            return { results: [], totalResults: 0, nextPageToken: null };
+            const errMsg = err?.name === 'AbortError' ? 'YouTube request timed out.' : 'Network connection error.';
+            console.warn('[YouTube API] Fetch error:', errMsg);
+            return { results: [], totalResults: 0, nextPageToken: null, error: errMsg };
         }
     },
 
@@ -162,10 +204,11 @@ export const youtubeApi = {
      * Retrieve contentDetails (duration) for YouTube videos
      */
     getVideoDurations: async (videoIds) => {
-        if (!videoIds || !YOUTUBE_API_KEY) return {};
+        const apiKey = getApiKey();
+        if (!videoIds || !isApiKeyValid()) return {};
         try {
             const params = new URLSearchParams({
-                key: YOUTUBE_API_KEY,
+                key: apiKey,
                 part: 'contentDetails',
                 id: videoIds
             });
