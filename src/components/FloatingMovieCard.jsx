@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { FaPlay, FaStar, FaBookmark, FaRegBookmark } from 'react-icons/fa';
+import { FaPlay, FaStar, FaBookmark, FaRegBookmark, FaYoutube, FaArchive } from 'react-icons/fa';
 import { isTvShow } from '../services/api';
 import { FALLBACK_POSTER } from '../services/omdbAdapter';
 import { useSunflixData } from '../context/SunflixDataContext';
@@ -38,17 +38,25 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
     const finalPoster = (posterPath && posterPath !== 'N/A') ? posterPath : FALLBACK_POSTER;
 
     const rating = movie?.imdbRating !== 'N/A' && movie?.imdbRating ? movie.imdbRating : (movie?.vote_average?.toFixed(1) || 'N/A');
-    const year = movie?.release_date?.split('-')[0] || movie?.Year || movie?.first_air_date?.split('-')[0];
+    const year = movie?.release_date?.split('-')[0] || movie?.Year || movie?.first_air_date?.split('-')[0] || movie?.year;
+
+    const isYoutube = movie?.source === 'youtube' || movie?._isYoutube;
+    const isArchive = movie?.source === 'internet_archive' || movie?._isArchive;
 
     const neonRing =
         accent === 'neon'
             ? 'shadow-[0_0_0_1px_rgba(34,211,238,0.15)] group-hover:shadow-[0_0_32px_rgba(34,211,238,0.35),0_0_64px_rgba(168,85,247,0.25)]'
             : 'group-hover:shadow-[0_0_28px_rgba(229,9,20,0.35)]';
 
-    const badgeClass =
-        accent === 'neon'
-            ? 'bg-gradient-to-r from-cyan-500/90 to-violet-600/90'
-            : 'bg-netflix-red/90';
+    const badgeClass = isYoutube
+        ? 'bg-red-600/90 border border-red-400/40 text-white'
+        : isArchive
+        ? 'bg-purple-700/90 border border-purple-400/40 text-white'
+        : accent === 'neon'
+        ? 'bg-gradient-to-r from-cyan-500/90 to-violet-600/90 text-white'
+        : 'bg-netflix-red/90 text-white';
+
+    const badgeText = isYoutube ? 'YOUTUBE' : isArchive ? 'ARCHIVE' : 'SUNFLIX';
 
     const bottomGlow =
         accent === 'neon'
@@ -83,27 +91,30 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
+            {/* Source Badge Visible Always */}
+            <div
+                style={{ transform: 'translateZ(50px)' }}
+                className={`absolute top-3 left-3 backdrop-blur-sm rounded px-2 py-0.5 transition-all duration-300 flex items-center gap-1 shadow-md ${badgeClass}`}
+            >
+                {isYoutube && <FaYoutube className="text-[11px]" />}
+                {isArchive && <FaArchive className="text-[10px]" />}
+                <span className="font-bold text-[10px] tracking-wider">{badgeText}</span>
+            </div>
+
             {rating && rating !== 'N/A' && (
                 <div
                     style={{ transform: 'translateZ(40px)' }}
-                    className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                    className="absolute top-3 right-12 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300"
                 >
                     <FaStar className="text-yellow-400 text-xs" />
                     <span className="text-white text-xs font-bold">{rating}</span>
                 </div>
             )}
 
-            <div
-                style={{ transform: 'translateZ(50px)' }}
-                className={`absolute top-3 right-3 backdrop-blur-sm rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 ${badgeClass}`}
-            >
-                <span className="text-white font-bold text-[10px] tracking-wider">SUNFLIX</span>
-            </div>
-
             <button
                 type="button"
                 aria-label={saved ? 'In watchlist' : 'Add to watchlist'}
-                className="absolute top-3 right-14 z-20 p-2 rounded-full bg-black/60 border border-white/15 text-cyan-300 opacity-0 group-hover:opacity-100 transition-all hover:border-cyan-400/50 hover:scale-105"
+                className="absolute top-3 right-3 z-20 p-2 rounded-full bg-black/60 border border-white/15 text-cyan-300 opacity-0 group-hover:opacity-100 transition-all hover:border-cyan-400/50 hover:scale-105"
                 style={{ transform: 'translateZ(55px)' }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -127,12 +138,14 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
                     )}
                     <span
                         className={
-                            accent === 'neon'
-                                ? 'font-bold bg-cyan-500/15 text-cyan-200 px-1.5 py-0.5 rounded text-[10px] border border-cyan-400/30'
-                                : 'text-netflix-red font-bold bg-netflix-red/10 px-1.5 py-0.5 rounded text-[10px]'
+                            isYoutube
+                                ? 'font-bold bg-red-600/20 text-red-300 px-1.5 py-0.5 rounded text-[10px] border border-red-500/40'
+                                : isArchive
+                                ? 'font-bold bg-purple-600/20 text-purple-300 px-1.5 py-0.5 rounded text-[10px] border border-purple-500/40'
+                                : 'font-bold bg-cyan-500/15 text-cyan-200 px-1.5 py-0.5 rounded text-[10px] border border-cyan-400/30'
                         }
                     >
-                        HD
+                        {isYoutube ? 'EMBED' : 'HD'}
                     </span>
                 </div>
 

@@ -9,8 +9,11 @@ import {
     FaSlidersH,
     FaClosedCaptioning,
     FaTv,
-    FaArrowLeft,
+    FaExternalLinkAlt,
+    FaExclamationTriangle,
+    FaSpinner
 } from 'react-icons/fa';
+import internetArchiveApi from '../services/internetArchiveApi';
 
 // Open-source authorized demonstration streams (Blender Foundation / Creative Commons)
 const SAMPLE_STREAMS = [
@@ -44,18 +47,41 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
     const [showControls, setShowControls] = useState(true);
     const [currentSeason, setCurrentSeason] = useState(1);
     const [currentEpisode, setCurrentEpisode] = useState(1);
+    const [archiveVideoUrl, setArchiveVideoUrl] = useState(movie?.videoUrl || movie?.video_url || null);
+    const [loadingMetadata, setLoadingMetadata] = useState(false);
+    const [videoError, setVideoError] = useState(false);
 
     const controlsTimeoutRef = useRef(null);
 
-    // Determine stream source: Creator video, YouTube trailer key, or authorized fallback stream
-    const isCreatorVideo = Boolean(movie?.video_url);
-    const youtubeKey = movie?.videos?.[0]?.key || (typeof videoId === 'string' && videoId.length === 11 ? videoId : null);
-    
-    // Choose fallback authorized stream based on title hash
-    const streamIndex = Math.abs((title || 'sunflix').length) % SAMPLE_STREAMS.length;
-    const mediaStreamUrl = isCreatorVideo
-        ? movie.video_url
-        : (SAMPLE_STREAMS[streamIndex]?.url || SAMPLE_STREAMS[0].url);
+    // Determine playback mechanism: YouTube Iframe Embed vs HTML5 MP4 Stream
+    const isYoutube = movie?.playbackType === 'youtube_embed' || movie?.source === 'youtube' || movie?._isYoutube || Boolean(movie?.youtubeId);
+    const youtubeKey = movie?.youtubeId || movie?.videos?.[0]?.key || (typeof videoId === 'string' && videoId.length === 11 ? videoId : null);
+
+    const isArchive = movie?.source === 'internet_archive' || movie?._isArchive;
+
+    // Fetch Internet Archive direct MP4 stream URL if needed
+    useEffect(() => {
+        if (isArchive && !archiveVideoUrl && movie?.identifier) {
+            setLoadingMetadata(true);
+            setVideoError(false);
+            internetArchiveApi.getMetadata(movie.identifier)
+                .then(details => {
+                    if (details?.videoUrl) {
+                        setArchiveVideoUrl(details.videoUrl);
+                    } else {
+                        setVideoError(true);
+                    }
+                })
+                .catch(() => setVideoError(true))
+                .finally(() => setLoadingMetadata(false));
+        } else if (movie?.videoUrl || movie?.video_url) {
+            setArchiveVideoUrl(movie.videoUrl || movie.video_url);
+        }
+    }, [isArchive, movie, archiveVideoUrl]);
+
+    // Choose fallback authorized MP4 stream based on title hash
+    const streamIndex = Math.abs((title || movie?.title || 'sunflix').length) % SAMPLE_STREAMS.length;
+    const mediaStreamUrl = archiveVideoUrl || (SAMPLE_STREAMS[streamIndex]?.url || SAMPLE_STREAMS[0].url);
 
     // Auto-hide controls after inactivity
     const handleMouseMove = () => {
@@ -158,18 +184,55 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
             className="relative w-full h-full bg-black overflow-hidden flex flex-col justify-center select-none group"
             onMouseMove={handleMouseMove}
         >
-            {youtubeKey && !isCreatorVideo ? (
-                <div className="relative w-full h-full flex items-center justify-center bg-black">
+            {/* Case A: YouTube Official Embedded IFrame Player */}
+            {isYoutube && youtubeKey ? (
+                <div className="relative w-full h-full flex flex-col items-center justify-center bg-black">
                     <iframe
                         className="w-full h-full object-cover"
                         src={`https://www.youtube-nocookie.com/embed/${youtubeKey}?autoplay=1&controls=1&modestbranding=1&rel=0`}
-                        title={title || 'Official Trailer'}
+                        title={title || movie?.title || 'Official YouTube Stream'}
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                         allowFullScreen
                     />
+                    <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+                        <a
+                            href={`https://www.youtube.com/watch?v=${youtubeKey}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-black/60 backdrop-blur-md text-white/80 hover:text-white px-3 py-1.5 rounded-lg border border-white/20 text-xs font-bold transition-all hover:bg-red-600/80"
+                        >
+                            Open on YouTube <FaExternalLinkAlt className="text-[10px]" />
+                        </a>
+                    </div>
+                </div>
+            ) : loadingMetadata ? (
+                /* Case B: Loading Metadata State */
+                <div className="relative w-full h-full flex flex-col items-center justify-center bg-black text-cyan-300 gap-4">
+                    <FaSpinner className="animate-spin text-4xl" />
+                    <p className="font-bold text-sm font-orbitron">Loading Stream Metadata from Internet Archive...</p>
+                </div>
+            ) : videoError ? (
+                /* Case C: Video Error / Unavailable State */
+                <div className="relative w-full h-full flex flex-col items-center justify-center bg-black text-red-300 p-6 text-center gap-4">
+                    <FaExclamationTriangle className="text-5xl text-red-400" />
+                    <h3 className="text-xl font-bold font-orbitron text-white">Video Stream Unavailable</h3>
+                    <p className="text-white/60 text-sm max-w-md">
+                        This item does not currently have a browser-compatible direct MP4 stream available in the Public Domain archive.
+                    </p>
+                    {movie?.identifier && (
+                        <a
+                            href={`https://archive.org/details/${movie.identifier}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center gap-2 px-6 py-2.5 bg-purple-600/30 border border-purple-500/50 text-purple-200 rounded-xl font-bold text-xs hover:bg-purple-600/50 transition-all"
+                        >
+                            View Manifest on Archive.org <FaExternalLinkAlt className="text-xs" />
+                        </a>
+                    )}
                 </div>
             ) : (
+                /* Case D: Standard HTML5 Video Player (Direct MP4 / Internet Archive / Fallback Stream) */
                 <div className="relative w-full h-full flex items-center justify-center bg-black">
                     <video
                         ref={videoRef}
@@ -180,12 +243,13 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
                         onClick={togglePlay}
                         onTimeUpdate={handleTimeUpdate}
                         onEnded={() => setIsPlaying(false)}
+                        onError={() => setVideoError(true)}
                     />
 
                     {/* Subtitle Overlay Simulation */}
                     {selectedSubtitle !== 'off' && (
                         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-yellow-300 px-4 py-1.5 rounded text-sm sm:text-base font-medium tracking-wide text-center max-w-[80%] pointer-events-none transition-all">
-                            [{selectedSubtitle.toUpperCase()}] — Enjoying "{title || 'SUNFLIX'}" in HD stream mode.
+                            [{selectedSubtitle.toUpperCase()}] — Enjoying "{title || movie?.title || 'SUNFLIX'}" in HD stream mode.
                         </div>
                     )}
 

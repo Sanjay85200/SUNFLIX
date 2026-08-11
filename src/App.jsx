@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 /**
- * Sunflix — Vite + React shell: cyberpunk UI, TMDB + OMDb rails, Supabase data.
+ * Sunflix — Vite + React shell: cyberpunk UI, TMDB + OMDb + Internet Archive + YouTube rails, Supabase data.
  */
 import {
     BrowserRouter as Router,
@@ -88,6 +88,8 @@ function HomePage() {
             <CommunityFeedStrip />
 
             <Row title="Trending Movies" fetchUrl={allCollections.trendingMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Internet Archive Public Domain Movies" fetchUrl="fetchArchiveMovies" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="YouTube Official Content & Trailers" fetchUrl="fetchYoutubeOfficial" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="IMDb Top Rated" fetchUrl={allCollections.topRatedMovies} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
             <Row title="Action Blockbusters" fetchUrl={allCollections.actionMovies} onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="Telugu Cinema Spotlight" fetchUrl={allCollections.teluguMovies} onMovieSelect={onMovieSelect} accent="neon" />
@@ -199,7 +201,7 @@ function AppShell() {
                 )}
 
                 <footer className="footer">
-                    <p>&copy; 2026 Sunflix. Neural streaming universe powered by TMDB & OMDb.</p>
+                    <p>&copy; 2026 Sunflix. Neural streaming universe powered by TMDB, OMDb, Internet Archive & YouTube.</p>
                 </footer>
 
                 {selectedMovie && (
