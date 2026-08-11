@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 /**
- * Sunflix — Vite + React shell: cyberpunk UI, OMDb rails, Supabase-ready data.
+ * Sunflix — Vite + React shell: cyberpunk UI, TMDB + OMDb rails, Supabase data.
  */
 import {
     BrowserRouter as Router,
@@ -18,11 +18,14 @@ import Row from './components/Row';
 import requests, { languageRequests } from './services/api';
 import allCollections from './config/movieCollections';
 import Login from './pages/Login';
+import Movies from './pages/Movies';
+import TVSeries from './pages/TVSeries';
 import AnimeUniverse from './pages/AnimeUniverse';
 import Profile from './pages/Profile';
 import Rewards from './pages/Rewards';
 import WatchParty from './pages/WatchParty';
 import CreatorDashboard from './pages/CreatorDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SunflixDataProvider } from './context/SunflixDataContext';
 import { UploadProvider } from './context/UploadContext';
@@ -196,7 +199,7 @@ function AppShell() {
                 )}
 
                 <footer className="footer">
-                    <p>&copy; 2026 Sunflix. Neural streaming universe powered by OMDb.</p>
+                    <p>&copy; 2026 Sunflix. Neural streaming universe powered by TMDB & OMDb.</p>
                 </footer>
 
                 {selectedMovie && (
@@ -223,11 +226,14 @@ function AppContent() {
                 <Route path="/signup" element={<Navigate to="/login" replace />} />
                 <Route path="/" element={<AppShell />}>
                     <Route index element={<HomePage />} />
+                    <Route path="movies" element={<Movies />} />
+                    <Route path="tv-series" element={<TVSeries />} />
                     <Route path="anime" element={<AnimePage />} />
                     <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
                     <Route path="watch-party" element={<ProtectedRoute><WatchParty /></ProtectedRoute>} />
                     <Route path="creator" element={<ProtectedRoute><CreatorDashboard /></ProtectedRoute>} />
+                    <Route path="admin" element={<AdminDashboard />} />
                 </Route>
             </Routes>
         </Router>

@@ -10,6 +10,7 @@ import {
     FaMicrophone,
     FaBars,
     FaCloudUploadAlt,
+    FaShieldAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +56,12 @@ const Navbar = ({ onSearch, onClearSearch, onToggleAI }) => {
             <NavLink to="/" end className={navClass} onClick={handleHomeClick}>
                 Home
             </NavLink>
+            <NavLink to="/movies" className={navClass} onClick={() => setMobileOpen(false)}>
+                Movies
+            </NavLink>
+            <NavLink to="/tv-series" className={navClass} onClick={() => setMobileOpen(false)}>
+                TV Series
+            </NavLink>
             <NavLink to="/anime" className={navClass} onClick={() => setMobileOpen(false)}>
                 Anime
             </NavLink>
@@ -70,8 +77,12 @@ const Navbar = ({ onSearch, onClearSearch, onToggleAI }) => {
             <NavLink to="/creator" className={navClass} onClick={() => setMobileOpen(false)}>
                 Creator Studio
             </NavLink>
+            <NavLink to="/admin" className={navClass} onClick={() => setMobileOpen(false)}>
+                Admin
+            </NavLink>
         </>
     );
+
 
     return (
         <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
@@ -184,6 +195,17 @@ const Navbar = ({ onSearch, onClearSearch, onToggleAI }) => {
                                     Creator Studio
                                 </span>
                             </Link>
+                            <Link
+                                to="/admin"
+                                className="block px-4 py-2.5 border-b border-white/5 text-white text-xs hover:bg-white/5"
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <span className="flex items-center gap-3">
+                                    <FaShieldAlt className="text-cyan-400/50 text-sm" />
+                                    Admin Deck
+                                </span>
+                            </Link>
+
                             <button
                                 type="button"
                                 onClick={() => {

@@ -120,3 +120,58 @@ create policy "watch_history_delete_own" on public.watch_history for delete usin
 create policy "followers_select_all" on public.creator_followers for select using (true);
 create policy "followers_insert_own" on public.creator_followers for insert with check (auth.uid() = follower_id);
 create policy "followers_delete_own" on public.creator_followers for delete using (auth.uid() = follower_id);
+
+-- Movie & Show Community Reviews
+create table if not exists public.movie_reviews (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  user_name text,
+  user_avatar text,
+  tmdb_id text not null,
+  media_type text not null check (media_type in ('movie', 'tv')),
+  rating integer not null check (rating >= 1 and rating <= 5),
+  review_text text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Continue Watching Progress
+create table if not exists public.continue_watching (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  tmdb_id text not null,
+  media_type text not null,
+  title text not null,
+  poster_path text,
+  progress_seconds integer not null default 0,
+  duration_seconds integer not null default 0,
+  updated_at timestamptz not null default now(),
+  unique (user_id, tmdb_id, media_type)
+);
+
+-- Custom Hero Banners & Featured Content (Admin Managed)
+create table if not exists public.custom_banners (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  backdrop_path text,
+  poster_path text,
+  overview text,
+  media_type text default 'movie',
+  tmdb_id text,
+  is_active boolean default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.movie_reviews enable row level security;
+alter table public.continue_watching enable row level security;
+alter table public.custom_banners enable row level security;
+
+create policy "reviews_select_all" on public.movie_reviews for select using (true);
+create policy "reviews_insert_auth" on public.movie_reviews for insert with check (auth.uid() = user_id);
+create policy "reviews_delete_own" on public.movie_reviews for delete using (auth.uid() = user_id);
+
+create policy "continue_select_own" on public.continue_watching for select using (auth.uid() = user_id);
+create policy "continue_insert_own" on public.continue_watching for insert with check (auth.uid() = user_id);
+create policy "continue_update_own" on public.continue_watching for update using (auth.uid() = user_id);
+
+create policy "banners_select_all" on public.custom_banners for select using (true);
+

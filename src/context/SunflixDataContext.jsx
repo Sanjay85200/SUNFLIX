@@ -241,6 +241,25 @@ export function SunflixDataProvider({ children }) {
         [user, isDemo, supabase, persistLocalWatchlist, loadFromSupabase]
     );
 
+    const claimDailyCheckin = useCallback(async () => {
+        setProfile((prev) => {
+            const next = { ...prev, sun_coins: (prev.sun_coins || 0) + 25, xp: (prev.xp || 0) + 50 };
+            if (uid) localStorage.setItem(storageKeyProfile(uid), JSON.stringify(next));
+            return next;
+        });
+
+        if (supabase && uid && !isDemo) {
+            try {
+                const { data: cur } = await supabase.from('profiles').select('sun_coins,xp').eq('id', uid).maybeSingle();
+                const coins = (cur?.sun_coins || 0) + 25;
+                const xp = (cur?.xp || 0) + 50;
+                await supabase.from('profiles').update({ sun_coins: coins, xp, updated_at: new Date().toISOString() }).eq('id', uid);
+            } catch (err) {
+                console.warn('[SunflixData] claimDailyCheckin error:', err);
+            }
+        }
+    }, [uid, isDemo]);
+
     const value = useMemo(
         () => ({
             watchlist,
@@ -249,10 +268,12 @@ export function SunflixDataProvider({ children }) {
             inWatchlist,
             addToWatchlist,
             removeFromWatchlist,
+            claimDailyCheckin,
             refresh: loadFromSupabase,
         }),
-        [watchlist, profile, loading, inWatchlist, addToWatchlist, removeFromWatchlist, loadFromSupabase]
+        [watchlist, profile, loading, inWatchlist, addToWatchlist, removeFromWatchlist, claimDailyCheckin, loadFromSupabase]
     );
 
     return <SunflixDataContext.Provider value={value}>{children}</SunflixDataContext.Provider>;
 }
+

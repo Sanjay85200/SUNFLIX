@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaPlay, FaPlus, FaThumbsUp, FaStar, FaAward, FaFilm, FaClock, FaGlobe, FaCheck } from 'react-icons/fa';
-import { getMovieById } from '../services/omdbApi';
+import { FaPlay, FaPlus, FaThumbsUp, FaStar, FaAward, FaClock, FaCheck, FaUser } from 'react-icons/fa';
+import { enrichMovieForModal } from '../services/api';
 import { omdbToSunflixFormat, FALLBACK_POSTER } from '../services/omdbAdapter';
 import { useAuth } from '../context/AuthContext';
 import { useSunflixData } from '../context/SunflixDataContext';
 import LoginPromptModal from './LoginPromptModal';
+import MovieReviews from './MovieReviews';
 
 const MovieDetail = ({ movie, onClose, onPlay }) => {
     const [details, setDetails] = useState(movie ? omdbToSunflixFormat(movie) : null);
@@ -15,8 +16,8 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
     const { user } = useAuth();
     const { addToWatchlist, inWatchlist } = useSunflixData();
 
-    const imdbId = movie?.imdbID || movie?.id;
-    const isSaved = inWatchlist(imdbId, details?.media_type || 'movie');
+    const targetId = movie?.id || movie?.imdbID;
+    const isSaved = inWatchlist(targetId, details?.media_type || 'movie');
 
     const handleProtectedAction = (actionName, successCallback) => {
         if (!user || user.id === 'sunflix-demo') {
@@ -29,42 +30,44 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
     };
 
     useEffect(() => {
-        if (!imdbId) {
+        if (!movie) {
             setLoading(false);
             return;
         }
 
-        async function fetchFullOmdbDetails() {
+        async function loadEnrichedData() {
             setLoading(true);
             try {
-                const data = await getMovieById(imdbId);
-                if (data) {
-                    setDetails(omdbToSunflixFormat(data));
-                }
+                const enriched = await enrichMovieForModal(movie);
+                if (enriched) setDetails(enriched);
             } catch (error) {
-                console.error("Error fetching OMDb details:", error);
+                console.error("Error enriching details:", error);
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchFullOmdbDetails();
-    }, [imdbId]);
+        loadEnrichedData();
+    }, [movie]);
 
     if (!movie && !details) return null;
 
     const poster = details?.poster_path || movie?.poster_path || FALLBACK_POSTER;
+    const backdrop = details?.backdrop_path || poster;
     const title = details?.title || movie?.title || movie?.name || 'Untitled';
-    const rating = details?.imdbRating || movie?.imdbRating || 'N/A';
+    const rating = details?.vote_average || details?.imdbRating || movie?.imdbRating || '8.2';
+
+    // Parse cast members from credits or actors string
+    const castList = details?.credits?.cast?.slice(0, 6) || (details?.actors ? details.actors.split(',').map((actor, idx) => ({ id: idx, name: actor.trim() })) : []);
 
     return (
-        <div className="text-white bg-gray-950 rounded-2xl overflow-hidden max-w-4xl mx-auto shadow-2xl border border-cyan-500/20">
+        <div className="text-white bg-gray-950 rounded-2xl overflow-hidden max-w-4xl mx-auto shadow-2xl border border-cyan-500/20 max-h-[88vh] overflow-y-auto custom-scrollbar">
             {/* Hero image header */}
-            <div className="relative h-[360px] sm:h-[440px] overflow-hidden bg-black">
+            <div className="relative h-[340px] sm:h-[420px] overflow-hidden bg-black">
                 {/* Background image blur effect */}
                 <div
-                    className="absolute inset-0 bg-cover bg-center opacity-40 blur-md scale-110"
-                    style={{ backgroundImage: `url("${poster}")` }}
+                    className="absolute inset-0 bg-cover bg-center opacity-45 blur-sm scale-105"
+                    style={{ backgroundImage: `url("${backdrop}")` }}
                 />
                 
                 {/* Dark gradients */}
@@ -83,7 +86,7 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded">
-                                {details?.type || 'Movie'}
+                                {details?.type || details?.media_type || 'Movie'}
                             </span>
                             {details?.imdbID && (
                                 <span className="bg-white/10 text-white/70 text-[10px] font-mono px-2 py-0.5 rounded">
@@ -92,16 +95,14 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                             )}
                         </div>
 
-                        <h1 className="text-2xl sm:text-4xl font-black mb-3 leading-tight font-orbitron tracking-wide">
+                        <h1 className="text-2xl sm:text-4xl font-black mb-3 leading-tight font-orbitron tracking-wide text-white drop-shadow-md">
                             {title}
                         </h1>
 
-                        <div className="flex items-center gap-4 text-xs sm:text-sm text-white/70 mb-4 flex-wrap">
-                            {rating !== 'N/A' && (
-                                <span className="flex items-center gap-1 text-yellow-400 font-bold bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/30">
-                                    <FaStar /> IMDb {rating}
-                                </span>
-                            )}
+                        <div className="flex items-center gap-4 text-xs sm:text-sm text-white/80 mb-4 flex-wrap">
+                            <span className="flex items-center gap-1 text-yellow-400 font-bold bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/30">
+                                <FaStar /> Rating {rating}
+                            </span>
                             {details?.release_date && <span>{details.release_date}</span>}
                             {details?.runtime && <span><FaClock className="inline mr-1 text-cyan-400"/>{details.runtime}</span>}
                             {details?.rated && <span className="border border-white/30 px-1.5 py-0.5 rounded text-[11px]">{details.rated}</span>}
@@ -109,10 +110,10 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
 
                         <div className="flex items-center gap-3 flex-wrap">
                             <button
-                                onClick={() => onPlay && onPlay(imdbId)}
+                                onClick={() => onPlay && onPlay(targetId)}
                                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm bg-cyan-400 text-black hover:bg-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.4)]"
                             >
-                                <FaPlay /> Watch Now
+                                <FaPlay /> Watch Stream
                             </button>
                             
                             <button 
@@ -142,11 +143,39 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
             <div className="p-6 sm:p-8 space-y-8">
                 {/* Plot Overview */}
                 <div>
-                    <h3 className="text-cyan-400 text-xs uppercase tracking-widest font-bold font-rajdhani mb-2">Plot Overview</h3>
-                    <p className="text-white/80 leading-relaxed text-sm sm:text-base">
+                    <h3 className="text-cyan-400 text-xs uppercase tracking-widest font-bold font-orbitron mb-2">Synopsis & Storyline</h3>
+                    <p className="text-white/85 leading-relaxed text-sm sm:text-base">
                         {details?.overview || 'No overview available.'}
                     </p>
                 </div>
+
+                {/* Cast & Characters Section */}
+                {castList.length > 0 && (
+                    <div>
+                        <h3 className="text-cyan-400 text-xs uppercase tracking-widest font-bold font-orbitron mb-3">Top Cast</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                            {castList.map((castItem, idx) => (
+                                <div key={castItem.id || idx} className="bg-white/5 border border-white/10 rounded-xl p-2.5 flex flex-col items-center text-center">
+                                    {castItem.profile_path ? (
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w185${castItem.profile_path}`}
+                                            alt={castItem.name}
+                                            className="w-12 h-12 rounded-full object-cover mb-2 border border-cyan-400/30"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full bg-cyan-950 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mb-2">
+                                            <FaUser className="text-lg" />
+                                        </div>
+                                    )}
+                                    <span className="text-white font-medium text-xs line-clamp-1">{castItem.name}</span>
+                                    {castItem.character && (
+                                        <span className="text-white/40 text-[10px] line-clamp-1">{castItem.character}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Metadata Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
@@ -168,13 +197,6 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                         <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                             <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">Writer</span>
                             <span className="text-white font-medium">{details.writer}</span>
-                        </div>
-                    )}
-
-                    {details?.actors && (
-                        <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl sm:col-span-2">
-                            <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">Cast / Actors</span>
-                            <span className="text-white font-medium">{details.actors}</span>
                         </div>
                     )}
 
@@ -200,35 +222,10 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                             <span className="text-white font-medium">{details.awards}</span>
                         </div>
                     )}
-
-                    {details?.imdbVotes && (
-                        <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                            <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">IMDb Votes</span>
-                            <span className="text-white font-medium">{details.imdbVotes}</span>
-                        </div>
-                    )}
-
-                    {details?.metascore && (
-                        <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                            <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">Metascore</span>
-                            <span className="text-green-400 font-bold">{details.metascore} / 100</span>
-                        </div>
-                    )}
-
-                    {details?.boxOffice && (
-                        <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                            <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">Box Office</span>
-                            <span className="text-emerald-400 font-bold">{details.boxOffice}</span>
-                        </div>
-                    )}
-
-                    {details?.production && (
-                        <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl sm:col-span-2">
-                            <span className="text-white/40 block mb-1 uppercase font-bold text-[10px]">Production</span>
-                            <span className="text-white font-medium">{details.production}</span>
-                        </div>
-                    )}
                 </div>
+
+                {/* Ratings & Reviews Section */}
+                <MovieReviews tmdbId={targetId} mediaType={details?.media_type || 'movie'} />
             </div>
             
             <LoginPromptModal 
