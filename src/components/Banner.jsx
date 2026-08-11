@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaPlay, FaInfoCircle, FaStar, FaVolumeMute } from 'react-icons/fa';
 import { fetchCollection, enrichMovieForModal } from '../services/api';
 import { heroMovies } from '../config/movieCollections';
+import { getReleaseYear } from '../utils/dateUtils';
 import './Banner.css';
 
 const Banner = ({ onPlayMovie }) => {
@@ -74,7 +75,7 @@ const Banner = ({ onPlayMovie }) => {
                         <FaStar className="text-xs" /> IMDb {rating}
                     </span>
                     <span className="text-white/60 text-sm font-medium">
-                        {movie?.release_date?.split('-')[0] || movie?.first_air_date?.split('-')[0] || '—'}
+                        {getReleaseYear(movie?.release_date || movie?.first_air_date) || '—'}
                     </span>
                     {movie?.rated && (
                         <span className="border border-white/30 px-1.5 py-0.5 rounded text-[11px] text-white/70">{movie.rated}</span>

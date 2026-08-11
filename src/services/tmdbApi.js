@@ -4,6 +4,8 @@
  * Includes caching, timeout protection, and request deduplication.
  */
 
+import { normalizeReleaseDate } from '../utils/dateUtils';
+
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY?.trim();
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -97,6 +99,8 @@ async function tmdbFetch(endpoint, params = {}) {
     return fetchPromise;
 }
 
+
+
 export function tmdbToSunflixFormat(item, mediaTypeOverride = null) {
     if (!item) return null;
 
@@ -123,8 +127,8 @@ export function tmdbToSunflixFormat(item, mediaTypeOverride = null) {
         backdrop_path: backdrop,
         vote_average: parseFloat(voteAvg) || 8.0,
         imdbRating: String(voteAvg),
-        release_date: item.release_date || item.first_air_date || item.Year || '',
-        first_air_date: item.first_air_date || item.release_date || '',
+        release_date: normalizeReleaseDate(item.release_date || item.first_air_date || item.Year) || '',
+        first_air_date: normalizeReleaseDate(item.first_air_date || item.release_date) || '',
         overview: item.overview || item.Plot || 'No synopsis available for this title.',
         media_type: mediaType,
         type: mediaType === 'tv' ? 'series' : 'movie',

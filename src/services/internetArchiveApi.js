@@ -4,6 +4,8 @@
  * No API key required.
  */
 
+import { normalizeReleaseDate } from '../utils/dateUtils';
+
 const ARCHIVE_SEARCH_BASE = 'https://archive.org/advancedsearch.php';
 const ARCHIVE_METADATA_BASE = 'https://archive.org/metadata';
 
@@ -35,9 +37,6 @@ function saveToCache(key, data) {
     } catch { /* storage full fallback */ }
 }
 
-/**
- * Format Internet Archive item into Unified SUNFLIX Content Model
- */
 export function archiveToSunflixFormat(item, mp4FileName = null) {
     if (!item || !item.identifier) return null;
 
@@ -52,7 +51,8 @@ export function archiveToSunflixFormat(item, mp4FileName = null) {
         ? item.description.replace(/<[^>]*>?/gm, '').trim()
         : 'Public domain media from the Internet Archive.';
 
-    const year = item.year || (item.publicdate ? String(item.publicdate).slice(0, 4) : 'Classic');
+    const yearStr = item.year ? String(item.year) : (item.publicdate ? String(item.publicdate).slice(0, 4) : 'Classic');
+    const releaseDateStr = normalizeReleaseDate(item.publicdate || item.year || yearStr);
 
     return {
         id: `archive_${identifier}`,
@@ -66,8 +66,8 @@ export function archiveToSunflixFormat(item, mp4FileName = null) {
         backdrop_path: poster,
         vote_average: 8.5,
         imdbRating: '8.5',
-        year: year,
-        release_date: year,
+        year: yearStr,
+        release_date: releaseDateStr,
         media_type: 'movie',
         type: 'movie',
         source: 'internet_archive',

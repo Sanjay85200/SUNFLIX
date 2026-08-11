@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getReleaseYear } from '../utils/dateUtils';
 import { motion } from 'framer-motion';
 import { FaPlay, FaPlus, FaThumbsUp, FaStar, FaAward, FaClock, FaCheck, FaUser } from 'react-icons/fa';
 import { enrichMovieForModal } from '../services/api';
@@ -103,7 +104,7 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
                             <span className="flex items-center gap-1 text-yellow-400 font-bold bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/30">
                                 <FaStar /> Rating {rating}
                             </span>
-                            {details?.release_date && <span>{details.release_date}</span>}
+                            {(details?.release_date || details?.first_air_date || movie?.release_date) && <span>{getReleaseYear(details?.release_date || details?.first_air_date || movie?.release_date)}</span>}
                             {details?.runtime && <span><FaClock className="inline mr-1 text-cyan-400"/>{details.runtime}</span>}
                             {details?.rated && <span className="border border-white/30 px-1.5 py-0.5 rounded text-[11px]">{details.rated}</span>}
                         </div>

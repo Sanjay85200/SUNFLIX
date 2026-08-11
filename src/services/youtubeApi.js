@@ -4,6 +4,8 @@
  * Accesses API key securely via import.meta.env.VITE_YOUTUBE_API_KEY.
  */
 
+import { normalizeReleaseDate, getReleaseYear } from '../utils/dateUtils';
+
 const YOUTUBE_SEARCH_BASE = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_VIDEOS_BASE = 'https://www.googleapis.com/youtube/v3/videos';
 
@@ -69,6 +71,8 @@ function parseIsoDuration(durationStr) {
     return (hours + mins).trim() || 'Clip';
 }
 
+
+
 /**
  * Convert YouTube snippet to Unified SUNFLIX Content Model
  */
@@ -79,7 +83,9 @@ export function youtubeToSunflixFormat(item, duration = '') {
     const snippet = item.snippet || {};
     const title = snippet.title ? snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&') : 'Untitled Video';
     const thumbnail = snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url;
-    const publishedYear = snippet.publishedAt ? String(snippet.publishedAt).slice(0, 4) : '2024';
+    
+    const publishedDate = snippet.publishedAt ? normalizeReleaseDate(snippet.publishedAt) : '';
+    const publishedYear = publishedDate ? getReleaseYear(publishedDate) : '2024';
 
     return {
         id: `yt_${videoId}`,
@@ -94,7 +100,7 @@ export function youtubeToSunflixFormat(item, duration = '') {
         vote_average: 8.6,
         imdbRating: '8.6',
         year: publishedYear,
-        release_date: publishedYear,
+        release_date: publishedDate || publishedYear,
         runtime: duration || '',
         media_type: 'movie',
         type: 'movie',

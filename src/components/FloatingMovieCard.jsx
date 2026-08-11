@@ -4,12 +4,13 @@ import { FaPlay, FaStar, FaBookmark, FaRegBookmark, FaYoutube, FaArchive } from 
 import { isTvShow } from '../services/api';
 import { FALLBACK_POSTER } from '../services/omdbAdapter';
 import { useSunflixData } from '../context/SunflixDataContext';
+import { getReleaseYear } from '../utils/dateUtils';
 
 const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
     const ref = useRef(null);
     const { addToWatchlist, inWatchlist } = useSunflixData();
     const mediaType = isTvShow(movie) ? 'tv' : 'movie';
-    const saved = inWatchlist(movie.id || movie.imdbID, mediaType);
+    const saved = inWatchlist(movie?.id || movie?.imdbID, mediaType);
 
     const x = useMotionValue(0);
     const y = useMotionValue(0);
@@ -38,7 +39,7 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
     const finalPoster = (posterPath && posterPath !== 'N/A') ? posterPath : FALLBACK_POSTER;
 
     const rating = movie?.imdbRating !== 'N/A' && movie?.imdbRating ? movie.imdbRating : (movie?.vote_average?.toFixed(1) || 'N/A');
-    const year = movie?.release_date?.split('-')[0] || movie?.Year || movie?.first_air_date?.split('-')[0] || movie?.year;
+    const year = getReleaseYear(movie?.release_date || movie?.first_air_date || movie?.Year || movie?.year);
 
     const isYoutube = movie?.source === 'youtube' || movie?._isYoutube;
     const isArchive = movie?.source === 'internet_archive' || movie?._isArchive;

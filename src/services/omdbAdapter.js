@@ -3,6 +3,8 @@
  * Ensures backward compatibility with existing components expecting TMDB-like properties.
  */
 
+import { normalizeReleaseDate } from '../utils/dateUtils';
+
 // Fallback high quality poster when poster is missing or "N/A"
 export const FALLBACK_POSTER = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1000&auto=format&fit=crop';
 
@@ -27,8 +29,8 @@ export function omdbToSunflixFormat(item) {
         backdrop_path: poster, // OMDb doesn't supply backdrop images; poster is used with CSS gradient effects
         vote_average: ratingNum,
         imdbRating: item.imdbRating || 'N/A',
-        release_date: item.Year || item.Released || item.release_date || '',
-        first_air_date: item.Year || item.Released || item.first_air_date || '',
+        release_date: normalizeReleaseDate(item.Released || item.Year || item.release_date) || '',
+        first_air_date: normalizeReleaseDate(item.Released || item.Year || item.first_air_date) || '',
         overview: item.Plot && item.Plot !== 'N/A' ? item.Plot : (item.overview || 'No plot description available.'),
         media_type: isTv ? 'tv' : 'movie',
         type: item.Type || (isTv ? 'series' : 'movie'),
