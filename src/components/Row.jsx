@@ -106,9 +106,9 @@ const Row = ({ title, fetchUrl, onMovieSelect, moviesData, isLargeRow = false, a
                             1440: { slidesPerView: isLargeRow ? 6 : 7, spaceBetween: 16 }
                         }}
                     >
-                        {movies.map((movie) => (
+                        {movies.map((movie, index) => (
                             <SwiperSlide
-                                key={movie.imdbID || movie.id}
+                                key={movie.imdbID || movie.id || movie.youtubeId || movie.identifier || `row-item-${index}`}
                                 className="!h-auto"
                                 style={{ perspective: "1200px" }}
                             >

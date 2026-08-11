@@ -81,6 +81,13 @@ const AnimeUniverse = ({ onMovieSelect }) => {
                 onMovieSelect={onMovieSelect}
                 accent="neon"
             />
+
+            <Row
+                title="YouTube Official Anime Trailers & Openings"
+                fetchUrl="fetchYoutubeOfficial"
+                onMovieSelect={onMovieSelect}
+                accent="neon"
+            />
         </div>
     );
 };

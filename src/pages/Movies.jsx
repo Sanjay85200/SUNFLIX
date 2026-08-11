@@ -64,6 +64,20 @@ const Movies = () => {
                     />
 
                     <Row
+                        title="Internet Archive Public Domain Movies"
+                        fetchUrl="fetchArchiveMovies"
+                        onMovieSelect={onMovieSelect}
+                        accent="neon"
+                    />
+
+                    <Row
+                        title="YouTube Official Cinema & Trailers"
+                        fetchUrl="fetchYoutubeOfficial"
+                        onMovieSelect={onMovieSelect}
+                        accent="neon"
+                    />
+
+                    <Row
                         title="Action & Cyber blockbusters"
                         fetchUrl="actionMovies"
                         onMovieSelect={onMovieSelect}
