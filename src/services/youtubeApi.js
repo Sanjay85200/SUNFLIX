@@ -1,6 +1,7 @@
 /**
  * Official YouTube Data API v3 Service for SUNFLIX
- * Handles authorized video searching, duration retrieval, error handling, and YouTube embed format mapping.
+ * Provides Movies, TV Series, Anime, and Documentaries integration via YouTube Data API v3.
+ * All playback uses YouTube's official embedded IFrame player.
  * Accesses API key securely via import.meta.env.VITE_YOUTUBE_API_KEY.
  */
 
@@ -10,7 +11,7 @@ const YOUTUBE_SEARCH_BASE = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_VIDEOS_BASE = 'https://www.googleapis.com/youtube/v3/videos';
 
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
-const FETCH_TIMEOUT_MS = 4000; // 4s timeout
+const FETCH_TIMEOUT_MS = 4500; // 4.5s timeout
 const memoryCache = new Map();
 
 function getApiKey() {
@@ -71,8 +72,6 @@ function parseIsoDuration(durationStr) {
     return (hours + mins).trim() || 'Clip';
 }
 
-
-
 /**
  * Convert YouTube snippet to Unified SUNFLIX Content Model
  */
@@ -81,18 +80,23 @@ export function youtubeToSunflixFormat(item, duration = '') {
 
     const videoId = item.id.videoId;
     const snippet = item.snippet || {};
-    const title = snippet.title ? snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&') : 'Untitled Video';
+    const rawTitle = snippet.title ? snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&') : 'Untitled Video';
     const thumbnail = snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url;
     
     const publishedDate = snippet.publishedAt ? normalizeReleaseDate(snippet.publishedAt) : '';
     const publishedYear = publishedDate ? getReleaseYear(publishedDate) : '2024';
 
+    // Intelligently classify media_type (series / TV vs movie)
+    const lowerTitle = rawTitle.toLowerCase();
+    const lowerDesc = (snippet.description || '').toLowerCase();
+    const isSeries = lowerTitle.includes('episode') || lowerTitle.includes('ep ') || lowerTitle.includes('season') || lowerTitle.includes('series') || lowerDesc.includes('episode');
+
     return {
         id: `yt_${videoId}`,
         imdbID: `yt_${videoId}`,
         youtubeId: videoId,
-        title: title,
-        name: title,
+        title: rawTitle,
+        name: rawTitle,
         description: snippet.description || `Official video upload by ${snippet.channelTitle || 'YouTube Channel'}.`,
         overview: snippet.description || `Official video upload by ${snippet.channelTitle || 'YouTube Channel'}.`,
         poster_path: thumbnail,
@@ -102,8 +106,8 @@ export function youtubeToSunflixFormat(item, duration = '') {
         year: publishedYear,
         release_date: publishedDate || publishedYear,
         runtime: duration || '',
-        media_type: 'movie',
-        type: 'movie',
+        media_type: isSeries ? 'tv' : 'movie',
+        type: isSeries ? 'series' : 'movie',
         source: 'youtube',
         sourceId: videoId,
         playbackType: 'youtube_embed',
@@ -229,6 +233,33 @@ export const youtubeApi = {
         } catch {
             return {};
         }
+    },
+
+    /**
+     * Category-specific YouTube Content Fetchers
+     */
+    getOfficialMovies: async () => {
+        const res = await youtubeApi.search('Official Full Movie HD Free');
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent('Official Movie Trailer HD');
+    },
+
+    getOfficialSeries: async () => {
+        const res = await youtubeApi.search('Official Series Episode 1 HD');
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent('Official TV Show Series');
+    },
+
+    getOfficialAnime: async () => {
+        const res = await youtubeApi.search('Official Anime Episode 1 English Sub HD');
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent('Official Anime Trailer HD');
+    },
+
+    getOfficialDocumentaries: async () => {
+        const res = await youtubeApi.search('Official Full Length Documentary HD');
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent('Official Documentary');
     },
 
     /**

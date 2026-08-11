@@ -71,6 +71,13 @@ const Movies = () => {
                     />
 
                     <Row
+                        title="YouTube Free Full Movies"
+                        fetchUrl="fetchYoutubeMovies"
+                        onMovieSelect={onMovieSelect}
+                        accent="neon"
+                    />
+
+                    <Row
                         title="YouTube Official Cinema & Trailers"
                         fetchUrl="fetchYoutubeOfficial"
                         onMovieSelect={onMovieSelect}

@@ -88,8 +88,10 @@ function HomePage() {
             <CommunityFeedStrip />
 
             <Row title="Trending Movies" fetchUrl={allCollections.trendingMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="YouTube Official Movies" fetchUrl="fetchYoutubeMovies" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="YouTube TV & Web Series" fetchUrl="fetchYoutubeSeries" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="Internet Archive Public Domain Movies" fetchUrl="fetchArchiveMovies" onMovieSelect={onMovieSelect} accent="neon" />
-            <Row title="YouTube Official Content & Trailers" fetchUrl="fetchYoutubeOfficial" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="YouTube Official Trailers & Anime" fetchUrl="fetchYoutubeOfficial" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="IMDb Top Rated" fetchUrl={allCollections.topRatedMovies} onMovieSelect={onMovieSelect} isLargeRow accent="neon" />
             <Row title="Action Blockbusters" fetchUrl={allCollections.actionMovies} onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="Telugu Cinema Spotlight" fetchUrl={allCollections.teluguMovies} onMovieSelect={onMovieSelect} accent="neon" />

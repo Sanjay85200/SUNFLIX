@@ -51,6 +51,13 @@ const TVSeries = () => {
                         accent="neon"
                     />
 
+                    <Row
+                        title="YouTube TV & Web Series"
+                        fetchUrl="fetchYoutubeSeries"
+                        onMovieSelect={onMovieSelect}
+                        accent="neon"
+                    />
+
                     <VortexCarousel
                         title="Critically Acclaimed TV Series"
                         fetchUrl="topRatedMovies"

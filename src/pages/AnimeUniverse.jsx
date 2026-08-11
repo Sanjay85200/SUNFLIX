@@ -83,6 +83,13 @@ const AnimeUniverse = ({ onMovieSelect }) => {
             />
 
             <Row
+                title="YouTube Official Anime Episodes & Series"
+                fetchUrl="fetchYoutubeAnime"
+                onMovieSelect={onMovieSelect}
+                accent="neon"
+            />
+
+            <Row
                 title="YouTube Official Anime Trailers & Openings"
                 fetchUrl="fetchYoutubeOfficial"
                 onMovieSelect={onMovieSelect}

@@ -24,6 +24,18 @@ export async function fetchCollection(collectionKeyOrArray) {
     if (keyString === 'youtubeOfficial' || keyString === 'fetchYoutubeOfficial') {
         return await youtubeApi.getOfficialContent();
     }
+    if (keyString === 'youtubeMovies' || keyString === 'fetchYoutubeMovies') {
+        return await youtubeApi.getOfficialMovies();
+    }
+    if (keyString === 'youtubeSeries' || keyString === 'fetchYoutubeSeries') {
+        return await youtubeApi.getOfficialSeries();
+    }
+    if (keyString === 'youtubeAnime' || keyString === 'fetchYoutubeAnime') {
+        return await youtubeApi.getOfficialAnime();
+    }
+    if (keyString === 'youtubeDocumentaries' || keyString === 'fetchYoutubeDocumentaries') {
+        return await youtubeApi.getOfficialDocumentaries();
+    }
 
     // 1. Try TMDB if configured
     if (tmdbApi.isConfigured) {
