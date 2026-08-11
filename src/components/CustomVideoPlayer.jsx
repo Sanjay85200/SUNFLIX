@@ -104,8 +104,15 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
             videoRef.current.pause();
             setIsPlaying(false);
         } else {
-            videoRef.current.play();
-            setIsPlaying(true);
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => setIsPlaying(true)).catch((err) => {
+                    console.warn("Video play exception caught:", err);
+                    setIsPlaying(false);
+                });
+            } else {
+                setIsPlaying(true);
+            }
         }
     };
 

@@ -9,7 +9,7 @@ import LoginPromptModal from './LoginPromptModal';
 import MovieReviews from './MovieReviews';
 
 const MovieDetail = ({ movie, onClose, onPlay }) => {
-    const [details, setDetails] = useState(movie ? omdbToSunflixFormat(movie) : null);
+    const [details, setDetails] = useState(movie ? (movie.title ? movie : omdbToSunflixFormat(movie)) : null);
     const [loading, setLoading] = useState(true);
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
     const [loginMessage, setLoginMessage] = useState('');
