@@ -1,71 +1,115 @@
 /**
  * Unified Media API Service for SUNFLIX
- * Orchestrates TMDB, OMDb, and collection fallback data seamlessly.
+ * Orchestrates TMDB, OMDb, and fallback catalog data seamlessly.
  */
 
 import tmdbApi, { tmdbToSunflixFormat } from './tmdbApi';
 import { getMovieById, getMultipleMovies, searchMovies } from './omdbApi';
 import { omdbToSunflixFormat } from './omdbAdapter';
 import allCollections from '../config/movieCollections';
+import { getFallbackCatalog, FALLBACK_MOVIES } from '../config/fallbackCatalog';
 
 export async function fetchCollection(collectionKeyOrArray) {
-    // 1. Check if array of IDs or key in allCollections
     let ids = Array.isArray(collectionKeyOrArray) ? collectionKeyOrArray : (allCollections[collectionKeyOrArray] || []);
+    const keyString = typeof collectionKeyOrArray === 'string' ? collectionKeyOrArray : null;
 
-    // If string was passed but wasn't in allCollections, map special keys to TMDB calls
-    if (typeof collectionKeyOrArray === 'string' && tmdbApi.isConfigured) {
+    // 1. Try TMDB if configured
+    if (tmdbApi.isConfigured) {
         try {
-            switch (collectionKeyOrArray) {
-                case 'trendingMovies':
-                case 'fetchTrending':
-                    return await tmdbApi.getTrending('movie');
-                case 'popularTvShows':
-                case 'fetchNetflixOriginals':
-                    return await tmdbApi.getPopularTv();
-                case 'topRatedMovies':
-                case 'fetchTopRated':
-                    return await tmdbApi.getTopRatedMovies();
-                case 'upcomingMovies':
-                    return await tmdbApi.getUpcomingMovies();
-                case 'actionMovies':
-                case 'fetchActionMovies':
-                    return await tmdbApi.getMoviesByGenre(28); // Action
-                case 'comedyMovies':
-                case 'fetchComedyMovies':
-                    return await tmdbApi.getMoviesByGenre(35); // Comedy
-                case 'horrorMovies':
-                case 'fetchHorrorMovies':
-                    return await tmdbApi.getMoviesByGenre(27); // Horror
-                case 'romanceMovies':
-                case 'fetchRomanceMovies':
-                    return await tmdbApi.getMoviesByGenre(10749); // Romance
-                case 'sciFiMovies':
-                case 'fetchSciFi':
-                    return await tmdbApi.getMoviesByGenre(878); // Sci-Fi
-                case 'animationMovies':
-                case 'fetchAnimeUniverse':
-                case 'fetchAnimeMovies':
-                    return await tmdbApi.getAnime();
-                case 'heroMovies':
-                case 'fetchFeaturedMovie':
-                    return await tmdbApi.getTrending('all', 'day');
-                default:
-                    break;
+            let tmdbResults = [];
+            
+            if (keyString) {
+                switch (keyString) {
+                    case 'trendingMovies':
+                    case 'fetchTrending':
+                        tmdbResults = await tmdbApi.getTrending('movie');
+                        break;
+                    case 'popularTvShows':
+                    case 'fetchNetflixOriginals':
+                        tmdbResults = await tmdbApi.getPopularTv();
+                        break;
+                    case 'topRatedMovies':
+                    case 'fetchTopRated':
+                        tmdbResults = await tmdbApi.getTopRatedMovies();
+                        break;
+                    case 'upcomingMovies':
+                        tmdbResults = await tmdbApi.getUpcomingMovies();
+                        break;
+                    case 'actionMovies':
+                    case 'fetchActionMovies':
+                        tmdbResults = await tmdbApi.getMoviesByGenre(28); // Action
+                        break;
+                    case 'comedyMovies':
+                    case 'fetchComedyMovies':
+                        tmdbResults = await tmdbApi.getMoviesByGenre(35); // Comedy
+                        break;
+                    case 'horrorMovies':
+                    case 'fetchHorrorMovies':
+                        tmdbResults = await tmdbApi.getMoviesByGenre(27); // Horror
+                        break;
+                    case 'romanceMovies':
+                    case 'fetchRomanceMovies':
+                        tmdbResults = await tmdbApi.getMoviesByGenre(10749); // Romance
+                        break;
+                    case 'sciFiMovies':
+                    case 'fetchSciFi':
+                        tmdbResults = await tmdbApi.getMoviesByGenre(878); // Sci-Fi
+                        break;
+                    case 'animationMovies':
+                    case 'fetchAnimeUniverse':
+                    case 'fetchAnimeMovies':
+                        tmdbResults = await tmdbApi.getAnime();
+                        break;
+                    case 'heroMovies':
+                    case 'fetchFeaturedMovie':
+                        tmdbResults = await tmdbApi.getTrending('all', 'day');
+                        break;
+                    default:
+                        tmdbResults = await tmdbApi.getTrending('movie');
+                        break;
+                }
+            } else if (Array.isArray(collectionKeyOrArray)) {
+                // If passed an array of IMDb IDs from allCollections
+                if (collectionKeyOrArray === allCollections.popularTvShows) {
+                    tmdbResults = await tmdbApi.getPopularTv();
+                } else if (collectionKeyOrArray === allCollections.topRatedMovies) {
+                    tmdbResults = await tmdbApi.getTopRatedMovies();
+                } else if (collectionKeyOrArray === allCollections.actionMovies) {
+                    tmdbResults = await tmdbApi.getMoviesByGenre(28);
+                } else if (collectionKeyOrArray === allCollections.sciFiMovies) {
+                    tmdbResults = await tmdbApi.getMoviesByGenre(878);
+                } else if (collectionKeyOrArray === allCollections.comedyMovies) {
+                    tmdbResults = await tmdbApi.getMoviesByGenre(35);
+                } else if (collectionKeyOrArray === allCollections.horrorMovies) {
+                    tmdbResults = await tmdbApi.getMoviesByGenre(27);
+                } else if (collectionKeyOrArray === allCollections.animationMovies) {
+                    tmdbResults = await tmdbApi.getAnime();
+                } else {
+                    tmdbResults = await tmdbApi.getTrending('movie');
+                }
+            }
+
+            if (tmdbResults && tmdbResults.length > 0) {
+                return tmdbResults;
             }
         } catch (err) {
-            console.warn(`[mediaApi] TMDB error for ${collectionKeyOrArray}, falling back to OMDb`, err);
+            console.warn(`[mediaApi] TMDB error for ${collectionKeyOrArray}, trying OMDb fallback`, err);
         }
     }
 
     // 2. Fallback to OMDb array fetch
-    if (!ids || ids.length === 0) return [];
-    try {
-        const omdbResults = await getMultipleMovies(ids);
-        return omdbResults.map(omdbToSunflixFormat).filter(Boolean);
-    } catch (err) {
-        console.error('[mediaApi] OMDb fetch error:', err);
-        return [];
+    if (ids && ids.length > 0) {
+        try {
+            const omdbResults = await getMultipleMovies(ids);
+            const formatted = omdbResults.map(omdbToSunflixFormat).filter(Boolean);
+            if (formatted.length > 0) return formatted;
+        } catch (err) {
+            console.warn('[mediaApi] OMDb fetch error:', err);
+        }
     }
+
+    // 3. Guaranteed Fallback Catalog (Ensures UI never renders blank)
+    return getFallbackCatalog(collectionKeyOrArray);
 }
 
 export async function searchContent(query, type = '', page = 1) {
@@ -85,20 +129,31 @@ export async function searchContent(query, type = '', page = 1) {
     // OMDb Search Fallback
     try {
         const omdbRes = await searchMovies(query, type, '', page);
-        const detailedList = await Promise.all(
-            omdbRes.results.map(async (item) => {
-                const detail = await getMovieById(item.imdbID);
-                return omdbToSunflixFormat(detail || item);
-            })
-        );
-        return {
-            results: detailedList.filter(Boolean),
-            totalResults: omdbRes.totalResults
-        };
+        if (omdbRes.results && omdbRes.results.length > 0) {
+            const detailedList = await Promise.all(
+                omdbRes.results.map(async (item) => {
+                    const detail = await getMovieById(item.imdbID);
+                    return omdbToSunflixFormat(detail || item);
+                })
+            );
+            return {
+                results: detailedList.filter(Boolean),
+                totalResults: omdbRes.totalResults
+            };
+        }
     } catch (err) {
-        console.error('[mediaApi] OMDb search error:', err);
-        return { results: [], totalResults: 0 };
+        console.warn('[mediaApi] OMDb search error:', err);
     }
+
+    // Fallback search filter from catalog
+    const filteredFallback = FALLBACK_MOVIES.filter(m =>
+        m.title.toLowerCase().includes(query.toLowerCase()) ||
+        m.genre.toLowerCase().includes(query.toLowerCase())
+    );
+    return {
+        results: filteredFallback.length > 0 ? filteredFallback : FALLBACK_MOVIES.slice(0, 4),
+        totalResults: filteredFallback.length > 0 ? filteredFallback.length : 4
+    };
 }
 
 export async function enrichMovieDetails(movie) {

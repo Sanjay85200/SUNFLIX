@@ -1,7 +1,7 @@
 /**
  * TMDB API v3 Service for SUNFLIX
  * Provides movie, TV show, anime, cast, video trailer, and season metadata.
- * Includes caching and request deduplication.
+ * Includes caching, timeout protection, and request deduplication.
  */
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY?.trim();
@@ -11,6 +11,7 @@ export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 export const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
 const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+const FETCH_TIMEOUT_MS = 3500; // 3.5 second timeout for fast fallback
 const memoryCache = new Map();
 const pendingRequests = new Map();
 
@@ -36,7 +37,6 @@ function saveToCache(key, data) {
             timestamp: Date.now()
         }));
     } catch {
-        // Storage full - clean old keys
         try {
             const keys = Object.keys(localStorage).filter(k => k.startsWith('tmdb_'));
             keys.slice(0, 20).forEach(k => localStorage.removeItem(k));
@@ -69,11 +69,15 @@ async function tmdbFetch(endpoint, params = {}) {
     }
 
     const fetchPromise = (async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
         try {
             const url = `${TMDB_BASE_URL}${endpoint}?${queryParams}`;
-            const response = await fetch(url);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
             if (!response.ok) {
-                console.warn(`TMDB HTTP ${response.status} for ${endpoint}`);
+                console.warn(`[TMDB] HTTP ${response.status} for ${endpoint}`);
                 return null;
             }
             const data = await response.json();
@@ -81,7 +85,8 @@ async function tmdbFetch(endpoint, params = {}) {
             saveToCache(cacheKey, data);
             return data;
         } catch (error) {
-            console.error(`TMDB fetch error for ${endpoint}:`, error);
+            clearTimeout(timeoutId);
+            console.warn(`[TMDB] fetch network timeout/error for ${endpoint}:`, error?.message || error);
             return null;
         } finally {
             pendingRequests.delete(cacheKey);
