@@ -49,15 +49,12 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
             ? 'shadow-[0_0_0_1px_rgba(34,211,238,0.15)] group-hover:shadow-[0_0_32px_rgba(34,211,238,0.35),0_0_64px_rgba(168,85,247,0.25)]'
             : 'group-hover:shadow-[0_0_28px_rgba(229,9,20,0.35)]';
 
-    const badgeClass = isYoutube
-        ? 'bg-red-600/90 border border-red-400/40 text-white'
-        : isArchive
-        ? 'bg-purple-700/90 border border-purple-400/40 text-white'
-        : accent === 'neon'
-        ? 'bg-gradient-to-r from-cyan-500/90 to-violet-600/90 text-white'
-        : 'bg-netflix-red/90 text-white';
+    const badgeClass =
+        accent === 'neon'
+            ? 'bg-gradient-to-r from-cyan-500/90 to-violet-600/90 text-white border border-cyan-400/30'
+            : 'bg-netflix-red/90 text-white border border-red-400/30';
 
-    const badgeText = isYoutube ? 'YOUTUBE' : isArchive ? 'ARCHIVE' : 'SUNFLIX';
+    const badgeText = 'SUNFLIX';
 
     const bottomGlow =
         accent === 'neon'
@@ -92,13 +89,11 @@ const FloatingMovieCard = ({ movie, onClick, isLargeRow, accent = 'red' }) => {
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
-            {/* Source Badge Visible Always */}
+            {/* Unified SUNFLIX Source Badge */}
             <div
                 style={{ transform: 'translateZ(50px)' }}
                 className={`absolute top-3 left-3 backdrop-blur-sm rounded px-2 py-0.5 transition-all duration-300 flex items-center gap-1 shadow-md ${badgeClass}`}
             >
-                {isYoutube && <FaYoutube className="text-[11px]" />}
-                {isArchive && <FaArchive className="text-[10px]" />}
                 <span className="font-bold text-[10px] tracking-wider">{badgeText}</span>
             </div>
 

@@ -1,6 +1,6 @@
 /**
  * Official YouTube Data API v3 Service for SUNFLIX
- * Provides Movies, TV Series, Anime, and Documentaries integration via YouTube Data API v3.
+ * Provides Movies, TV Series, Anime, and Genre-Classified Content discovery via YouTube Data API v3.
  * All playback uses YouTube's official embedded IFrame player.
  * Accesses API key securely via import.meta.env.VITE_YOUTUBE_API_KEY.
  */
@@ -73,6 +73,44 @@ function parseIsoDuration(durationStr) {
 }
 
 /**
+ * Automatically classifies a YouTube video into SUNFLIX genre categories based on title & description metadata
+ */
+export function classifyGenre(title = '', description = '') {
+    const text = `${title} ${description}`.toLowerCase();
+    const genres = [];
+
+    if (text.includes('anime') || text.includes('manga') || text.includes('subbed') || text.includes('dubbed') || text.includes('japanese animation')) {
+        genres.push('Animation', 'Anime');
+    } else if (text.includes('animated') || text.includes('cartoon') || text.includes('animation')) {
+        genres.push('Animation');
+    }
+
+    if (text.includes('action') || text.includes('fight') || text.includes('martial art') || text.includes('combat') || text.includes('battle') || text.includes('warrior')) {
+        genres.push('Action');
+    }
+    if (text.includes('sci-fi') || text.includes('scifi') || text.includes('science fiction') || text.includes('space') || text.includes('cyberpunk') || text.includes('alien')) {
+        genres.push('Sci-Fi');
+    }
+    if (text.includes('comedy') || text.includes('funny') || text.includes('humor') || text.includes('parody') || text.includes('standup') || text.includes('hilarious')) {
+        genres.push('Comedy');
+    }
+    if (text.includes('horror') || text.includes('scary') || text.includes('zombie') || text.includes('ghost') || text.includes('haunted') || text.includes('slasher')) {
+        genres.push('Horror');
+    }
+    if (text.includes('thriller') || text.includes('suspense') || text.includes('mystery') || text.includes('crime')) {
+        genres.push('Thriller');
+    }
+    if (text.includes('romance') || text.includes('romantic') || text.includes('love') || text.includes('relationship')) {
+        genres.push('Romance');
+    }
+    if (text.includes('documentary') || text.includes('history') || text.includes('national geographic') || text.includes('nature') || text.includes('true story')) {
+        genres.push('Documentary');
+    }
+
+    return genres.length > 0 ? genres.join(', ') : 'Feature, Cinema';
+}
+
+/**
  * Convert YouTube snippet to Unified SUNFLIX Content Model
  */
 export function youtubeToSunflixFormat(item, duration = '') {
@@ -91,6 +129,8 @@ export function youtubeToSunflixFormat(item, duration = '') {
     const lowerDesc = (snippet.description || '').toLowerCase();
     const isSeries = lowerTitle.includes('episode') || lowerTitle.includes('ep ') || lowerTitle.includes('season') || lowerTitle.includes('series') || lowerDesc.includes('episode');
 
+    const genreString = classifyGenre(rawTitle, snippet.description || '');
+
     return {
         id: `yt_${videoId}`,
         imdbID: `yt_${videoId}`,
@@ -108,6 +148,8 @@ export function youtubeToSunflixFormat(item, duration = '') {
         runtime: duration || '',
         media_type: isSeries ? 'tv' : 'movie',
         type: isSeries ? 'series' : 'movie',
+        genre: genreString,
+        genres: genreString,
         source: 'youtube',
         sourceId: videoId,
         playbackType: 'youtube_embed',
@@ -150,7 +192,7 @@ export const youtubeApi = {
                 q: query.trim(),
                 videoEmbeddable: 'true',
                 videoSyndicated: 'true',
-                maxResults: '15'
+                maxResults: '20'
             });
 
             if (pageToken) params.append('pageToken', pageToken);
@@ -236,8 +278,14 @@ export const youtubeApi = {
     },
 
     /**
-     * Category-specific YouTube Content Fetchers
+     * Category and Genre-Specific Fetchers
      */
+    getByGenre: async (genreName = 'Action') => {
+        const res = await youtubeApi.search(`Official Full Movie ${genreName} HD`);
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent(`Official ${genreName} Movie`);
+    },
+
     getOfficialMovies: async () => {
         const res = await youtubeApi.search('Official Full Movie HD Free');
         if (res.results && res.results.length > 0) return res.results;
@@ -263,7 +311,7 @@ export const youtubeApi = {
     },
 
     /**
-     * Fetch curated official YouTube movie/anime clips
+     * Fetch curated official YouTube movie/anime entries
      */
     getOfficialContent: async (topic = 'Official Anime Trailer HD') => {
         const res = await youtubeApi.search(topic);
@@ -288,6 +336,8 @@ export const youtubeApi = {
                 runtime: '2m 30s',
                 media_type: 'movie',
                 type: 'movie',
+                genre: 'Action, Animation, Sci-Fi',
+                genres: 'Action, Animation, Sci-Fi',
                 source: 'youtube',
                 sourceId: 'cqGjhVJWtEg',
                 playbackType: 'youtube_embed',
@@ -311,6 +361,8 @@ export const youtubeApi = {
                 runtime: '3m 02s',
                 media_type: 'movie',
                 type: 'movie',
+                genre: 'Sci-Fi, Adventure, Action',
+                genres: 'Sci-Fi, Adventure, Action',
                 source: 'youtube',
                 sourceId: 'Way9Dexny3w',
                 playbackType: 'youtube_embed',

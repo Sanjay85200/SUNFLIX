@@ -183,7 +183,7 @@ export async function searchContent(query, type = '', page = 1) {
     const taggedArchive = archiveResults.map(item => ({ ...item, source: 'internet_archive', playbackType: 'direct_video' }));
     const taggedYoutube = youtubeResults.map(item => ({ ...item, source: 'youtube', playbackType: 'youtube_embed' }));
 
-    // Interleave search results smoothly
+    // Interleave and deduplicate search results smoothly
     const combined = [];
     const maxLength = Math.max(taggedCinema.length, taggedArchive.length, taggedYoutube.length);
     for (let i = 0; i < maxLength; i++) {
@@ -192,8 +192,18 @@ export async function searchContent(query, type = '', page = 1) {
         if (taggedArchive[i]) combined.push(taggedArchive[i]);
     }
 
+    // Deduplicate results by title, ID, or YouTube ID
+    const seenKeys = new Set();
+    const deduplicatedCombined = combined.filter(item => {
+        if (!item) return false;
+        const key = item.imdbID || item.id || item.youtubeId || item.identifier || (item.title || item.name || '').toLowerCase().trim();
+        if (!key || seenKeys.has(key)) return false;
+        seenKeys.add(key);
+        return true;
+    });
+
     // Fallback search filter if all remote APIs returned empty
-    let finalResults = combined;
+    let finalResults = deduplicatedCombined;
     if (finalResults.length === 0) {
         const filteredFallback = FALLBACK_MOVIES.filter(m =>
             m.title.toLowerCase().includes(query.toLowerCase()) ||
