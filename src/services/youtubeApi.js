@@ -1,6 +1,6 @@
 /**
  * Official YouTube Data API v3 Service for SUNFLIX
- * Provides Movies, TV Series, Anime, and Genre-Classified Content discovery via YouTube Data API v3.
+ * Provides Movies, TV Series, Anime, and Language + Genre-Classified Content discovery via YouTube Data API v3.
  * All playback uses YouTube's official embedded IFrame player.
  * Accesses API key securely via import.meta.env.VITE_YOUTUBE_API_KEY.
  */
@@ -73,6 +73,22 @@ function parseIsoDuration(durationStr) {
 }
 
 /**
+ * Automatically classifies language from title & description
+ */
+export function classifyLanguage(title = '', description = '') {
+    const text = `${title} ${description}`.toLowerCase();
+
+    if (text.includes('telugu') || text.includes('tollywood') || text.includes('తెలుగు')) return 'Telugu';
+    if (text.includes('hindi') || text.includes('bollywood') || text.includes('हिंदी')) return 'Hindi';
+    if (text.includes('tamil') || text.includes('kollywood') || text.includes('தமிழ்')) return 'Tamil';
+    if (text.includes('malayalam') || text.includes('mollywood') || text.includes('മലയാളം')) return 'Malayalam';
+    if (text.includes('kannada') || text.includes('sandalwood') || text.includes('കന്നഡ')) return 'Kannada';
+    if (text.includes('english') || text.includes('hollywood')) return 'English';
+
+    return 'Global';
+}
+
+/**
  * Automatically classifies a YouTube video into SUNFLIX genre categories based on title & description metadata
  */
 export function classifyGenre(title = '', description = '') {
@@ -106,6 +122,9 @@ export function classifyGenre(title = '', description = '') {
     if (text.includes('documentary') || text.includes('history') || text.includes('national geographic') || text.includes('nature') || text.includes('true story')) {
         genres.push('Documentary');
     }
+    if (text.includes('drama') || text.includes('tragedy') || text.includes('emotional') || text.includes('family') || text.includes('adventure')) {
+        genres.push('Drama');
+    }
 
     return genres.length > 0 ? genres.join(', ') : 'Feature, Cinema';
 }
@@ -130,6 +149,7 @@ export function youtubeToSunflixFormat(item, duration = '') {
     const isSeries = lowerTitle.includes('episode') || lowerTitle.includes('ep ') || lowerTitle.includes('season') || lowerTitle.includes('series') || lowerDesc.includes('episode');
 
     const genreString = classifyGenre(rawTitle, snippet.description || '');
+    const languageString = classifyLanguage(rawTitle, snippet.description || '');
 
     return {
         id: `yt_${videoId}`,
@@ -150,6 +170,7 @@ export function youtubeToSunflixFormat(item, duration = '') {
         type: isSeries ? 'series' : 'movie',
         genre: genreString,
         genres: genreString,
+        language: languageString,
         source: 'youtube',
         sourceId: videoId,
         playbackType: 'youtube_embed',
@@ -278,6 +299,16 @@ export const youtubeApi = {
     },
 
     /**
+     * Language & Genre Multi-Level Fetcher
+     */
+    getByLanguageAndGenre: async (language = 'Telugu', genre = 'Action') => {
+        const query = `Official Full Movie ${language} ${genre} HD`;
+        const res = await youtubeApi.search(query);
+        if (res.results && res.results.length > 0) return res.results;
+        return youtubeApi.getOfficialContent(`Official ${language} Movie`);
+    },
+
+    /**
      * Category and Genre-Specific Fetchers
      */
     getByGenre: async (genreName = 'Action') => {
@@ -338,6 +369,7 @@ export const youtubeApi = {
                 type: 'movie',
                 genre: 'Action, Animation, Sci-Fi',
                 genres: 'Action, Animation, Sci-Fi',
+                language: 'English',
                 source: 'youtube',
                 sourceId: 'cqGjhVJWtEg',
                 playbackType: 'youtube_embed',
@@ -363,6 +395,7 @@ export const youtubeApi = {
                 type: 'movie',
                 genre: 'Sci-Fi, Adventure, Action',
                 genres: 'Sci-Fi, Adventure, Action',
+                language: 'English',
                 source: 'youtube',
                 sourceId: 'Way9Dexny3w',
                 playbackType: 'youtube_embed',

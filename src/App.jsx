@@ -69,10 +69,12 @@ const categories = [
 ];
 
 const languages = [
-    { id: 'en', name: 'English', fetchUrl: allCollections.englishMovies },
-    { id: 'hi', name: 'Hindi', fetchUrl: allCollections.hindiMovies },
-    { id: 'te', name: 'Telugu', fetchUrl: allCollections.teluguMovies },
-    { id: 'ta', name: 'Tamil', fetchUrl: allCollections.tamilMovies },
+    { id: 'telugu', name: 'Telugu', fetchUrl: 'teluguMovies' },
+    { id: 'hindi', name: 'Hindi', fetchUrl: 'hindiMovies' },
+    { id: 'english', name: 'English', fetchUrl: 'englishMovies' },
+    { id: 'tamil', name: 'Tamil', fetchUrl: 'tamilMovies' },
+    { id: 'malayalam', name: 'Malayalam', fetchUrl: 'malayalamMovies' },
+    { id: 'kannada', name: 'Kannada', fetchUrl: 'kannadaMovies' },
 ];
 
 function HomePage() {
@@ -88,6 +90,12 @@ function HomePage() {
             <CommunityFeedStrip />
 
             <Row title="Trending Movies" fetchUrl={allCollections.trendingMovies} onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Telugu Action & Blockbusters" fetchUrl="teluguAction" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Hindi Cinema & Comedy" fetchUrl="hindiComedy" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="English Sci-Fi & Action" fetchUrl="englishSciFi" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Tamil Feature Cinema" fetchUrl="tamilMovies" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Malayalam Cinema Hits" fetchUrl="malayalamMovies" onMovieSelect={onMovieSelect} accent="neon" />
+            <Row title="Kannada Cinema Spotlight" fetchUrl="kannadaMovies" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="YouTube Official Movies" fetchUrl="fetchYoutubeMovies" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="YouTube TV & Web Series" fetchUrl="fetchYoutubeSeries" onMovieSelect={onMovieSelect} accent="neon" />
             <Row title="Internet Archive Public Domain Movies" fetchUrl="fetchArchiveMovies" onMovieSelect={onMovieSelect} accent="neon" />

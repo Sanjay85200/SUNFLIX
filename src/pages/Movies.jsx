@@ -9,13 +9,17 @@ import './sunflix-pages.css';
 
 const MOVIE_GENRES = [
     { id: 'all', name: 'All Movies', fetchUrl: 'trendingMovies' },
+    { id: 'telugu', name: 'Telugu Movies', fetchUrl: 'teluguMovies' },
+    { id: 'hindi', name: 'Hindi Movies', fetchUrl: 'hindiMovies' },
+    { id: 'english', name: 'English Movies', fetchUrl: 'englishMovies' },
     { id: 'action', name: 'Action', fetchUrl: 'actionMovies' },
     { id: 'scifi', name: 'Sci-Fi', fetchUrl: 'sciFiMovies' },
     { id: 'comedy', name: 'Comedy', fetchUrl: 'comedyMovies' },
     { id: 'horror', name: 'Horror', fetchUrl: 'horrorMovies' },
     { id: 'romance', name: 'Romance', fetchUrl: 'romanceMovies' },
-    { id: 'thriller', name: 'Thriller', fetchUrl: 'fetchThriller' },
-    { id: 'animation', name: 'Animation', fetchUrl: 'animationMovies' },
+    { id: 'tamil', name: 'Tamil', fetchUrl: 'tamilMovies' },
+    { id: 'malayalam', name: 'Malayalam', fetchUrl: 'malayalamMovies' },
+    { id: 'kannada', name: 'Kannada', fetchUrl: 'kannadaMovies' },
 ];
 
 const Movies = () => {

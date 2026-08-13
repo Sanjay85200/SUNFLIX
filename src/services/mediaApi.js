@@ -37,6 +37,26 @@ export async function fetchCollection(collectionKeyOrArray) {
         return await youtubeApi.getOfficialDocumentaries();
     }
 
+    // Language & Genre Specific YouTube Content Collections
+    if (keyString && (keyString.startsWith('telugu') || keyString.startsWith('hindi') || keyString.startsWith('english') || keyString.startsWith('tamil') || keyString.startsWith('malayalam') || keyString.startsWith('kannada'))) {
+        let lang = 'Telugu';
+        if (keyString.startsWith('hindi')) lang = 'Hindi';
+        if (keyString.startsWith('english')) lang = 'English';
+        if (keyString.startsWith('tamil')) lang = 'Tamil';
+        if (keyString.startsWith('malayalam')) lang = 'Malayalam';
+        if (keyString.startsWith('kannada')) lang = 'Kannada';
+
+        let genre = 'Movies';
+        if (keyString.includes('Action')) genre = 'Action';
+        if (keyString.includes('Comedy')) genre = 'Comedy';
+        if (keyString.includes('Romance')) genre = 'Romance';
+        if (keyString.includes('SciFi')) genre = 'Sci-Fi';
+        if (keyString.includes('Drama')) genre = 'Drama';
+        if (keyString.includes('Thriller')) genre = 'Thriller';
+
+        return await youtubeApi.getByLanguageAndGenre(lang, genre);
+    }
+
     // 1. Try TMDB if configured
     if (tmdbApi.isConfigured) {
         try {
