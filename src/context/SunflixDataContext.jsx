@@ -97,7 +97,7 @@ export function SunflixDataProvider({ children }) {
                     {
                         id: uid,
                         email: user?.email,
-                        display_name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'Player',
+                        display_name: user?.user_metadata?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'Player'),
                         updated_at: new Date().toISOString(),
                     },
                     { onConflict: 'id' }

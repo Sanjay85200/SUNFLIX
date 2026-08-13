@@ -58,8 +58,8 @@ const MovieDetail = ({ movie, onClose, onPlay }) => {
     const title = details?.title || movie?.title || movie?.name || 'Untitled';
     const rating = details?.vote_average || details?.imdbRating || movie?.imdbRating || '8.2';
 
-    // Parse cast members from credits or actors string
-    const castList = details?.credits?.cast?.slice(0, 6) || (details?.actors ? details.actors.split(',').map((actor, idx) => ({ id: idx, name: actor.trim() })) : []);
+    // Parse cast members from credits or actors string safely
+    const castList = details?.credits?.cast?.slice(0, 6) || (typeof details?.actors === 'string' ? details.actors.split(',').map((actor, idx) => ({ id: idx, name: actor.trim() })) : []);
 
     return (
         <div className="text-white bg-gray-950 rounded-2xl overflow-hidden max-w-4xl mx-auto shadow-2xl border border-cyan-500/20 max-h-[88vh] overflow-y-auto custom-scrollbar">

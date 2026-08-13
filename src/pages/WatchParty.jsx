@@ -55,7 +55,7 @@ const WatchParty = () => {
             id: `room-${Date.now()}`,
             title: title.trim(),
             status: 'live',
-            host: user?.user_metadata?.name || user?.email?.split('@')[0] || 'Demo Host',
+            host: user?.user_metadata?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'Demo Host'),
             mediaTitle: title.trim()
         };
 
@@ -75,7 +75,7 @@ const WatchParty = () => {
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (!messageInput.trim()) return;
-        const senderName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Member';
+        const senderName = user?.user_metadata?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'Member');
         setChatMessages((prev) => [
             ...prev,
             { sender: senderName, text: messageInput.trim(), isSystem: false }

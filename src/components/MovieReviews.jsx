@@ -55,7 +55,7 @@ const MovieReviews = ({ tmdbId, mediaType = 'movie' }) => {
         e.preventDefault();
         if (!reviewText.trim()) return;
 
-        const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'SUNFLIX Pilot';
+        const userName = user?.user_metadata?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'SUNFLIX Pilot');
         const newReview = {
             id: `local-${Date.now()}`,
             user_id: user?.id || 'demo-user',
