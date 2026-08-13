@@ -51,6 +51,7 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
     const [archiveVideoUrl, setArchiveVideoUrl] = useState(movie?.videoUrl || movie?.video_url || null);
     const [dynamicYoutubeKey, setDynamicYoutubeKey] = useState(null);
     const [loadingMetadata, setLoadingMetadata] = useState(false);
+    const [streamLoading, setStreamLoading] = useState(false);
     const [videoError, setVideoError] = useState(false);
 
     const controlsTimeoutRef = useRef(null);
@@ -59,19 +60,24 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
     const rawYoutubeKey = movie?.youtubeId || movie?.videos?.[0]?.key || (typeof videoId === 'string' && videoId.length === 11 ? videoId : null);
     const youtubeKey = rawYoutubeKey || dynamicYoutubeKey;
     const isYoutube = movie?.playbackType === 'youtube_embed' || movie?.source === 'youtube' || movie?._isYoutube || Boolean(youtubeKey);
-
     const isArchive = movie?.source === 'internet_archive' || movie?._isArchive;
 
     // Dynamically query YouTube for playable video key if not already attached
     useEffect(() => {
         if (!rawYoutubeKey && !archiveVideoUrl && !isArchive && (movie?.title || movie?.name || title)) {
+            setStreamLoading(true);
             const queryTitle = title || movie?.title || movie?.name;
             const searchKeyword = `${queryTitle} ${movie?.year || ''} official trailer`;
-            youtubeApi.search(searchKeyword).then(res => {
-                if (res.results && res.results[0]?.youtubeId) {
-                    setDynamicYoutubeKey(res.results[0].youtubeId);
-                }
-            }).catch(() => {});
+            youtubeApi.search(searchKeyword)
+                .then(res => {
+                    if (res.results && res.results[0]?.youtubeId) {
+                        setDynamicYoutubeKey(res.results[0].youtubeId);
+                    }
+                })
+                .catch(() => {})
+                .finally(() => setStreamLoading(false));
+        } else {
+            setStreamLoading(false);
         }
     }, [movie, title, rawYoutubeKey, archiveVideoUrl, isArchive]);
 
@@ -207,13 +213,20 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
             className="relative w-full h-full bg-black overflow-hidden flex flex-col justify-center select-none group"
             onMouseMove={handleMouseMove}
         >
-            {/* Case A: YouTube Official Embedded IFrame Player */}
-            {isYoutube && youtubeKey ? (
+            {/* Stream Loading State */}
+            {streamLoading || loadingMetadata ? (
+                <div className="relative w-full h-full flex flex-col items-center justify-center bg-black text-cyan-300 gap-4">
+                    <FaSpinner className="animate-spin text-5xl text-cyan-400" />
+                    <h3 className="font-bold text-base font-orbitron text-white">Connecting to SUNFLIX Stream...</h3>
+                    <p className="text-white/60 text-xs font-mono">Resolving HD video stream for &quot;{title || movie?.title || movie?.name || 'Selected Movie'}&quot;</p>
+                </div>
+            ) : isYoutube && youtubeKey ? (
+                /* Case A: YouTube Official Embedded IFrame Player */
                 <div className="relative w-full h-full flex flex-col items-center justify-center bg-black">
                     <iframe
                         className="w-full h-full object-cover"
                         src={`https://www.youtube-nocookie.com/embed/${youtubeKey}?autoplay=1&controls=1&modestbranding=1&rel=0`}
-                        title={title || movie?.title || 'Official YouTube Stream'}
+                        title={title || movie?.title || 'Official Stream'}
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                         allowFullScreen
@@ -229,19 +242,13 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
                         </a>
                     </div>
                 </div>
-            ) : loadingMetadata ? (
-                /* Case B: Loading Metadata State */
-                <div className="relative w-full h-full flex flex-col items-center justify-center bg-black text-cyan-300 gap-4">
-                    <FaSpinner className="animate-spin text-4xl" />
-                    <p className="font-bold text-sm font-orbitron">Loading Stream Metadata from Internet Archive...</p>
-                </div>
             ) : videoError ? (
-                /* Case C: Video Error / Unavailable State */
+                /* Case C: Video Error State */
                 <div className="relative w-full h-full flex flex-col items-center justify-center bg-black text-red-300 p-6 text-center gap-4">
                     <FaExclamationTriangle className="text-5xl text-red-400" />
                     <h3 className="text-xl font-bold font-orbitron text-white">Video Stream Unavailable</h3>
                     <p className="text-white/60 text-sm max-w-md">
-                        This item does not currently have a browser-compatible direct MP4 stream available in the Public Domain archive.
+                        This item does not currently have a browser-compatible direct stream.
                     </p>
                     {movie?.identifier && (
                         <a
@@ -255,7 +262,7 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
                     )}
                 </div>
             ) : (
-                /* Case D: Standard HTML5 Video Player (Direct MP4 / Internet Archive / Fallback Stream) */
+                /* Case D: HTML5 Video Player */
                 <div className="relative w-full h-full flex items-center justify-center bg-black">
                     <video
                         ref={videoRef}
@@ -272,7 +279,7 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
                     {/* Subtitle Overlay Simulation */}
                     {selectedSubtitle !== 'off' && (
                         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-yellow-300 px-4 py-1.5 rounded text-sm sm:text-base font-medium tracking-wide text-center max-w-[80%] pointer-events-none transition-all">
-                            [{selectedSubtitle.toUpperCase()}] — Enjoying "{title || movie?.title || 'SUNFLIX'}" in HD stream mode.
+                            [{selectedSubtitle.toUpperCase()}] — Enjoying &quot;{title || movie?.title || 'SUNFLIX'}&quot; in HD stream mode.
                         </div>
                     )}
 
