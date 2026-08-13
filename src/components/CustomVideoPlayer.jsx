@@ -14,6 +14,7 @@ import {
     FaSpinner
 } from 'react-icons/fa';
 import internetArchiveApi from '../services/internetArchiveApi';
+import youtubeApi from '../services/youtubeApi';
 
 // Open-source authorized demonstration streams (Blender Foundation / Creative Commons)
 const SAMPLE_STREAMS = [
@@ -48,16 +49,31 @@ const CustomVideoPlayer = ({ movie, videoId, title, onClose, onProgressUpdate })
     const [currentSeason, setCurrentSeason] = useState(1);
     const [currentEpisode, setCurrentEpisode] = useState(1);
     const [archiveVideoUrl, setArchiveVideoUrl] = useState(movie?.videoUrl || movie?.video_url || null);
+    const [dynamicYoutubeKey, setDynamicYoutubeKey] = useState(null);
     const [loadingMetadata, setLoadingMetadata] = useState(false);
     const [videoError, setVideoError] = useState(false);
 
     const controlsTimeoutRef = useRef(null);
 
     // Determine playback mechanism: YouTube Iframe Embed vs HTML5 MP4 Stream
-    const isYoutube = movie?.playbackType === 'youtube_embed' || movie?.source === 'youtube' || movie?._isYoutube || Boolean(movie?.youtubeId);
-    const youtubeKey = movie?.youtubeId || movie?.videos?.[0]?.key || (typeof videoId === 'string' && videoId.length === 11 ? videoId : null);
+    const rawYoutubeKey = movie?.youtubeId || movie?.videos?.[0]?.key || (typeof videoId === 'string' && videoId.length === 11 ? videoId : null);
+    const youtubeKey = rawYoutubeKey || dynamicYoutubeKey;
+    const isYoutube = movie?.playbackType === 'youtube_embed' || movie?.source === 'youtube' || movie?._isYoutube || Boolean(youtubeKey);
 
     const isArchive = movie?.source === 'internet_archive' || movie?._isArchive;
+
+    // Dynamically query YouTube for playable video key if not already attached
+    useEffect(() => {
+        if (!rawYoutubeKey && !archiveVideoUrl && !isArchive && (movie?.title || movie?.name || title)) {
+            const queryTitle = title || movie?.title || movie?.name;
+            const searchKeyword = `${queryTitle} ${movie?.year || ''} official trailer`;
+            youtubeApi.search(searchKeyword).then(res => {
+                if (res.results && res.results[0]?.youtubeId) {
+                    setDynamicYoutubeKey(res.results[0].youtubeId);
+                }
+            }).catch(() => {});
+        }
+    }, [movie, title, rawYoutubeKey, archiveVideoUrl, isArchive]);
 
     // Fetch Internet Archive direct MP4 stream URL if needed
     useEffect(() => {
